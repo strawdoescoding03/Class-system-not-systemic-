@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -15,12 +16,15 @@ namespace Class_system__not_systemic_
 
         List<Rectangle> barriers;
         KeyboardState keyboardState;
-        
+
+        SpriteEffects daveFlipHorizontally;
+        int[] daveFrames; 
         int rows, columns;
         int frame;
         int frames;
+
         int directionRow;
-        int leftRow, rightRow, upRow, downRow;
+        int leftRow, rightRow;
         int width;
         int height;
 
@@ -55,25 +59,37 @@ namespace Class_system__not_systemic_
             barriers.Add(new Rectangle(400, 200, 200, 30));
             barriers.Add(new Rectangle(700, 450, 30, 100));
 
+            daveFrames = new int[]{
+            6,
+            8,
+            8,
+            6,
+            6,
+            2,
+            4,
+            6,
+            6,
+            6
+            };
+
+
             speed = 1.5f;
 
-            columns = 9;
-            rows = 4;
-            upRow = 0;
-            leftRow = 1;
-            downRow = 2;
-            rightRow = 3;
+            columns = 8;
+            rows = 12;
+            leftRow = 10;
+            rightRow = 10;
 
             time = 0.0f;
             frameSpeed = 0.08f;
-            frames = 9;
+            frames = 12;
             frame = 0;
 
 
-            directionRow = downRow;
+            directionRow = leftRow;
 
             playerLocation = new Vector2(20, 20);
-            playerCollisionRect = new Rectangle(20, 20, 20, 48);
+            playerCollisionRect = new Rectangle(20, 20, 30, 48);
             playerDrawRect = new Rectangle(20, 20, 50, 65);
 
             UpdateRects();
@@ -89,7 +105,7 @@ namespace Class_system__not_systemic_
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
             rectangleTexture = Content.Load<Texture2D>("rectangle");
-            characterSpriteSheet = Content.Load<Texture2D>("skeleton_spritesheet");
+            characterSpriteSheet = Content.Load<Texture2D>("daveSpriteSheet");
 
 
             // TODO: use this.Content to load your game content here
@@ -100,12 +116,36 @@ namespace Class_system__not_systemic_
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (time > frameSpeed && playerDirection != Vector2.Zero)
+            {
+                time = 0f;
+                frame = (frame + 1) % daveFrames[directionRow-1];
+
+            }
+
+
+            foreach (Rectangle barrier in barriers)
+                if (playerCollisionRect.Intersects(barrier))
+                {
+                    playerLocation -= playerDirection * speed;
+                    UpdateRects();
+                }
+
             keyboardState = Keyboard.GetState();
 
             SetPlayerDirection();
             playerLocation += playerDirection * speed;
             UpdateRects();
 
+            if (keyboardState.IsKeyDown(Keys.A))
+            {
+                daveFlipHorizontally = SpriteEffects.FlipHorizontally;
+            }
+            else if (keyboardState.IsKeyDown(Keys.D))
+            {
+                daveFlipHorizontally = SpriteEffects.None;
+            }
 
             base.Update(gameTime);
         }
@@ -122,8 +162,14 @@ namespace Class_system__not_systemic_
             }
 
             _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
-            _spriteBatch.Draw(characterSpriteSheet, playerDrawRect,
-            new Rectangle(0, directionRow * height, width, height), Color.White);
+            _spriteBatch.Draw(characterSpriteSheet, playerDrawRect, 
+                new Rectangle(frame * width, directionRow * height, width, height),
+                Color.White,
+                0,
+                new((int)playerDrawRect.Width/2, 0),
+                daveFlipHorizontally,
+                0
+                );
 
 
             _spriteBatch.End();
@@ -134,8 +180,8 @@ namespace Class_system__not_systemic_
         public void UpdateRects() 
         {
             playerCollisionRect.Location = playerLocation.ToPoint();
-            playerDrawRect.X = playerCollisionRect.X - 15;
-            playerDrawRect.Y = playerCollisionRect.Y - 15;
+            playerDrawRect.X = playerCollisionRect.X + 2;
+            playerDrawRect.Y = playerCollisionRect.Y;
         }
 
         private void SetPlayerDirection()
@@ -145,10 +191,11 @@ namespace Class_system__not_systemic_
                 playerDirection.X -= 1;
             if (keyboardState.IsKeyDown(Keys.D))
                 playerDirection.X += 1;
-            if (keyboardState.IsKeyDown(Keys.W))
-                playerDirection.Y -= 1;
-            if (keyboardState.IsKeyDown(Keys.S))
-                playerDirection.Y += 1;
+            //if (keyboardState.IsKeyDown(Keys.W))
+            //    playerDirection.Y -= 1;
+
+            //if (keyboardState.IsKeyDown(Keys.S))
+            //    playerDirection.Y += 1;
 
             if (playerDirection != Vector2.Zero)
             {
@@ -157,12 +204,29 @@ namespace Class_system__not_systemic_
                     directionRow = leftRow;
                 else if (playerDirection.X > 0) // Moving right
                     directionRow = rightRow;
-                else if (playerDirection.Y < 0) // Moving up
-                    directionRow = upRow;
-                else
-                    directionRow = downRow;
+                //else if (playerDirection.Y < 0) // Moving up
+                //    directionRow = upRow;
+                //else
+                //    directionRow = downRow;
 
             }
+
+            if (playerDirection != Vector2.Zero)
+            {
+                playerDirection.Normalize();
+                if (playerDirection.X < 0) // Moving left
+                    directionRow = leftRow;
+                else if (playerDirection.X > 0) // Moving right
+                    directionRow = rightRow;
+                //else if (playerDirection.Y < 0) // Moving up
+                //    directionRow = upRow;
+                //else
+                //    directionRow = downRow;
+
+            }
+            else
+                frame = 0;
+
 
 
         }
