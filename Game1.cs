@@ -28,12 +28,12 @@ namespace Class_system__not_systemic_
 
         int directionRow, bgDraw;
         int leftRow, rightRow, climbUp, idle;
-        int width;
-        int height;
+        int width, backgroundWidth;
+        int height, backgroundHeight;
 
         float speed;
-        float time;
-        float frameSpeed;
+        float time, bgtime;
+        float frameSpeed, backgroundFrameSpeed;
         float gravity = 0.3f; // This is how fast player accelerated downwards
         float gravitySpeed = 0f;
         float jumpSpeed = 7f; // This will determine the strength of the jump
@@ -93,14 +93,16 @@ namespace Class_system__not_systemic_
             climbUp = 3;
             idle = 7;
             time = 0.0f;
+            bgtime = 0.0f;
             frameSpeed = 0.08f;
+            backgroundFrameSpeed = 0.7f;
             frames = 12;
             frame = 0;
 
             bgColumns = 5;
             bgRows = 4;
             bgDraw = 1;
-            backgroundFrames = 20;
+            backgroundFrames = 4;
             backgroundFrame = 0;
 
 
@@ -115,6 +117,11 @@ namespace Class_system__not_systemic_
             base.Initialize();
             width = characterSpriteSheet.Width / columns;
             height = characterSpriteSheet.Height / rows;
+            backgroundWidth = backgroundSpriteSheet.Width / bgColumns;
+            backgroundHeight = backgroundSpriteSheet.Height / bgRows;
+
+
+
 
         }
 
@@ -160,10 +167,16 @@ namespace Class_system__not_systemic_
 
             time += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (time > frameSpeed)
-            {
-                backgroundFrame = (1 + backgroundFrame) % backgroundFrames;
+            {                                
                 time = 0f;
                 frame = (frame + 1) % daveFrames[directionRow - 1];
+            }
+
+            bgtime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            if (bgtime > backgroundFrameSpeed)
+            {
+                backgroundFrame = (1 + backgroundFrame) % backgroundFrames;
+                bgtime = 0f;
             }
 
 
@@ -260,15 +273,15 @@ namespace Class_system__not_systemic_
 
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(backgroundSpriteSheet, window,
-                new Rectangle(frame * width, bgDraw * height, width, height),
+            _spriteBatch.Draw(backgroundSpriteSheet, window, 
+                new Rectangle(backgroundFrame * width, bgDraw * height, backgroundWidth, backgroundHeight),
                 Color.White);
 
 
 
             foreach (Rectangle barrier in barriers)
             {
-                _spriteBatch.Draw(rectangleTexture, barrier, Color.Black);
+                _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue);
             }
 
             _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
