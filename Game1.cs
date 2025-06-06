@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -16,6 +17,7 @@ namespace Class_system__not_systemic_
 
         List<Rectangle> barriers;
         List<Rectangle> platforms;
+        List<Rectangle> ladders;
         KeyboardState keyboardState;
 
         SpriteEffects daveFlipHorizontally;
@@ -39,6 +41,8 @@ namespace Class_system__not_systemic_
         float jumpSpeed = 7f; // This will determine the strength of the jump
         bool onGround = false;
 
+        string debug = "";
+
         Vector2 playerLocation = new Vector2(10, 10);
         Vector2 playerDirection;
         Vector2 playerSpeed = Vector2.Zero;
@@ -61,17 +65,22 @@ namespace Class_system__not_systemic_
 
 
             barriers = new List<Rectangle>();
-            barriers.Add(new Rectangle(100, 100, 30, 150));
+
             barriers.Add(new Rectangle(0, 400, 800, 20)); // Ground
-            barriers.Add(new Rectangle(100, 350, 100, 20));
-            barriers.Add(new Rectangle(350, 250, 75, 20));
-            barriers.Add(new Rectangle(200, 300, 75, 20));
-            barriers.Add(new Rectangle(150, 10, 75, 20));
+            barriers.Add(new Rectangle(0, 350, 800, 20));
+            barriers.Add(new Rectangle(0, 250, 800, 20));
+            barriers.Add(new Rectangle(200, 300, 800, 20));
+            barriers.Add(new Rectangle(80, 80, 800, 20));
+
+
+            ladders = new List<Rectangle>();
+            ladders.Add(new Rectangle(50, 50, 20, 200));
+
 
             daveFrames = new int[]{
             6,
             8,
-            6,
+            8,
             6,
             6,
             6,
@@ -95,14 +104,14 @@ namespace Class_system__not_systemic_
             time = 0.0f;
             bgtime = 0.0f;
             frameSpeed = 0.08f;
-            backgroundFrameSpeed = 0.7f;
+            backgroundFrameSpeed = 0.18f;
             frames = 12;
             frame = 0;
 
             bgColumns = 5;
             bgRows = 4;
             bgDraw = 1;
-            backgroundFrames = 4;
+            backgroundFrames = 5;
             backgroundFrame = 0;
 
 
@@ -131,7 +140,7 @@ namespace Class_system__not_systemic_
 
             rectangleTexture = Content.Load<Texture2D>("rectangle");
             characterSpriteSheet = Content.Load<Texture2D>("daveSpriteSheet");
-            backgroundSpriteSheet = Content.Load<Texture2D>("backgroundTexture");
+            backgroundSpriteSheet = Content.Load<Texture2D>("backgroundTexture2");
 
 
             // TODO: use this.Content to load your game content here
@@ -169,9 +178,10 @@ namespace Class_system__not_systemic_
             if (time > frameSpeed)
             {                                
                 time = 0f;
-                frame = (frame + 1) % daveFrames[directionRow - 1];
+                frame = (frame + 1) % daveFrames[directionRow];
             }
-
+            //debug += frame.ToString();
+            this.Window.Title = daveFrames[directionRow] + "";
             bgtime += (float)gameTime.ElapsedGameTime.TotalSeconds;
             if (bgtime > backgroundFrameSpeed)
             {
@@ -194,8 +204,17 @@ namespace Class_system__not_systemic_
                 onGround = true;
                 gravitySpeed = 0f;
             }
+            
             else gravitySpeed += gravity;
-                   
+            
+            foreach (Rectangle ladder in ladders)
+            {
+                if (playerCollisionRect.Intersects(ladder))
+                {
+                    gravitySpeed = 0;
+                }
+
+            }
 
             playerLocation.Y += gravitySpeed;
             UpdateRects();
@@ -222,17 +241,7 @@ namespace Class_system__not_systemic_
                 }
             
 
-            //move to other method
-            if (keyboardState.IsKeyDown(Keys.A))
-            {
-                daveFlipHorizontally = SpriteEffects.FlipHorizontally;
-
-            }
-            else if (keyboardState.IsKeyDown(Keys.D))
-            {
-                daveFlipHorizontally = SpriteEffects.None;
-            }
-
+          
 
             //if (!onGround)
             //{
@@ -273,15 +282,20 @@ namespace Class_system__not_systemic_
 
             _spriteBatch.Begin();
 
-            _spriteBatch.Draw(backgroundSpriteSheet, window, 
-                new Rectangle(backgroundFrame * width, bgDraw * height, backgroundWidth, backgroundHeight),
-                Color.White);
+            //_spriteBatch.Draw(backgroundSpriteSheet, window, 
+            //    new Rectangle(backgroundFrame * backgroundWidth, bgDraw * backgroundHeight, backgroundWidth, backgroundHeight),
+            //    Color.White);
 
 
 
             foreach (Rectangle barrier in barriers)
             {
                 _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue);
+            }
+
+            foreach (Rectangle ladder in ladders)
+            {
+                _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue);
             }
 
             _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
@@ -313,30 +327,56 @@ namespace Class_system__not_systemic_
         }
 
         private void SetPlayerDirection()
-        {
-            
-            
+        {       
+
+
+
             playerDirection = Vector2.Zero;
 
-            
+            //move to other method
+            if (keyboardState.IsKeyDown(Keys.A))
+            {
+                daveFlipHorizontally = SpriteEffects.FlipHorizontally;
+
+            }
+            else if (keyboardState.IsKeyDown(Keys.D))
+            {
+                daveFlipHorizontally = SpriteEffects.None;
+            }
 
             if (keyboardState.IsKeyDown(Keys.A))
                 playerDirection.X -= 1;
             if (keyboardState.IsKeyDown(Keys.D))
                 playerDirection.X += 1;
-            if (keyboardState.IsKeyDown(Keys.W))
-                playerDirection.Y -= 1;
-            if (keyboardState.IsKeyDown(Keys.S))
-                playerDirection.Y += 1;
 
-            if (playerDirection == Vector2.Zero)
+            foreach (Rectangle ladder in ladders)
             {
-                directionRow = idle;
+                if (playerCollisionRect.Intersects(ladder))
+                {
+                    if (keyboardState.IsKeyDown(Keys.W))
+                        playerDirection.Y -= 1;
+                    if (keyboardState.IsKeyDown(Keys.S))
+                        playerDirection.Y += 1;
+                }
+                    
             }
+
+            foreach(Rectangle ladder in ladders)
+            {
+                if (playerCollisionRect.Intersects(ladder))
+
+                    directionRow = climbUp;
+
+                else 
+                    directionRow = idle;
+            }
+                
+
+
+           
 
             if (playerDirection != Vector2.Zero)
             {
-                playerDirection.Normalize();
                 if (playerDirection.X < 0) // Moving left
                     directionRow = leftRow;
                 else if (playerDirection.X > 0) // Moving right
@@ -346,24 +386,30 @@ namespace Class_system__not_systemic_
                 else if (playerDirection.Y > 0) // Moving down
                     directionRow = climbUp;
 
-            }
 
-            if (playerDirection != Vector2.Zero)
-            {
+
                 playerDirection.Normalize();
+                
+                foreach (Rectangle ladder in ladders)
+                {
+                    if (playerCollisionRect.Intersects(ladder))
+                    {
+                       if (playerDirection.Y < 0) // Moving up
+                            directionRow = climbUp;
+                       else if (playerDirection.Y > 0) // Moving down
+                            directionRow = climbUp;
+                    }
+                }
+                
                 if (playerDirection.X < 0) // Moving left
                     directionRow = leftRow;
                 else if (playerDirection.X > 0) // Moving right
                     directionRow = rightRow;
-                else if (playerDirection.Y < 0) // Moving up
-                    directionRow = climbUp;
-                else if (playerDirection.Y > 0) // Moving down
-                    directionRow = climbUp;
+
 
 
             }
-            else
-                frame = 0;
+            
 
 
 
