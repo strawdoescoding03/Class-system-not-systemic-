@@ -35,7 +35,7 @@ namespace Class_system__not_systemic_
         List<Rectangle> platforms;
         List<Rectangle> ladders;
         KeyboardState keyboardState;
-        MouseState mouseState;
+        MouseState mouseState, prevMouseState;
 
         SpriteEffects daveFlipHorizontally;
         int[] daveFrames;
@@ -66,7 +66,8 @@ namespace Class_system__not_systemic_
         Vector2 playerLocation = new Vector2(10, 10);
         Vector2 playerDirection;
         Vector2 playerSpeed = Vector2.Zero;
-        Rectangle playerCollisionRect, playerDrawRect, window, gameWindow, movingWindow, playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn;
+        Rectangle playerCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
+            playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, yellowCardBtn, redCardBtn, blueCardBtn;
 
 
         public Game1()
@@ -175,7 +176,9 @@ namespace Class_system__not_systemic_
             //backgroundWidth = backgroundSpriteSheet.Width / bgColumns;
             //backgroundHeight = backgroundSpriteSheet.Height / bgRows;
 
-
+            yellowCardBtn = new Rectangle(165, 232, 125, 110);
+            redCardBtn = new Rectangle(339, 232, 125, 110);
+            blueCardBtn = new Rectangle(512, 232, 125, 110);
 
 
         }
@@ -230,7 +233,7 @@ namespace Class_system__not_systemic_
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
+            prevMouseState = mouseState;
             mouseState = Mouse.GetState();
             mouseX = mouseState.X;
             mouseY = mouseState.Y;
@@ -239,16 +242,15 @@ namespace Class_system__not_systemic_
 
             if (screen == Screen.StartMenu)
             {
-                mouseState = Mouse.GetState();
 
-                if (mouseState.LeftButton == ButtonState.Pressed && playGameButton.Contains(mouseState.Position))
+                if (mouseState.LeftButton == ButtonState.Pressed && playGameButton.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
                 
                 {
                     screen = Screen.LevelSelector;
                 }
 
 
-                if (mouseState.LeftButton == ButtonState.Pressed && instructionsButton.Contains(mouseState.Position))
+                if (mouseState.LeftButton == ButtonState.Pressed && instructionsButton.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
 
                 {
                     screen = Screen.Instructions;
@@ -274,12 +276,12 @@ namespace Class_system__not_systemic_
             if (screen == Screen.Instructions)
             {
                 mouseState = Mouse.GetState();
-                if (mouseState.LeftButton == ButtonState.Pressed && instructionsMenuPlayBtn.Contains(mouseState.Position))
+                if (mouseState.LeftButton == ButtonState.Pressed && instructionsMenuPlayBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     screen = Screen.LevelSelector;
                 }
 
-                if (mouseState.LeftButton == ButtonState.Pressed && returnToMenuBtn.Contains(mouseState.Position))
+                if (mouseState.LeftButton == ButtonState.Pressed && returnToMenuBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     screen = Screen.StartMenu;
                 }
@@ -289,6 +291,23 @@ namespace Class_system__not_systemic_
 
             if (screen == Screen.LevelSelector)
             {
+                mouseState = Mouse.GetState();
+
+                if(mouseState.LeftButton == ButtonState.Pressed && yellowCardBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                {
+                    screen = Screen.Level1;
+                }
+
+                if (mouseState.LeftButton == ButtonState.Pressed && redCardBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                {
+                    screen = Screen.Level2;
+                }
+
+                if (mouseState.LeftButton == ButtonState.Pressed && blueCardBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                {
+                    screen = Screen.Level3;
+                }
+
 
                 if (yellowCardCaptured == true && redCardCaptured == true == blueCardCaptured == true);
                 {
@@ -466,7 +485,9 @@ namespace Class_system__not_systemic_
             {
                 _spriteBatch.Draw(levelSelectionMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
 
-
+                _spriteBatch.Draw(rectangleTexture, new Rectangle(165, 232, 125, 110), Color.White * 0.5f);
+                _spriteBatch.Draw(rectangleTexture, new Rectangle(339, 232, 125, 110), Color.White * 0.5f);
+                _spriteBatch.Draw(rectangleTexture, new Rectangle(512, 232, 125, 110), Color.White * 0.5f);
             }
 
 
