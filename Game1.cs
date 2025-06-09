@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using Microsoft.Xna.Framework;
@@ -13,7 +14,10 @@ namespace Class_system__not_systemic_
     {
         StartMenu,
         Instructions,
-        Game,
+        LevelSelector,
+        Level1,
+        Level2,
+        Level3,
         EndScreen
     }
     public class Game1 : Game
@@ -23,9 +27,10 @@ namespace Class_system__not_systemic_
 
         Screen screen;
         Texture2D characterSpriteSheet, rectangleTexture, backgroundSpriteSheet, currentBackgroundTexture, background1, background2, background3,
-            background4, background5, background6, background7, background8, trainTexture, startmenuTexture;
+            background4, background5, background6, background7, background8, trainTexture, startmenuTexture, instructionsMenuTexture, cyborgAttack1, cyborgAttack2, cyborgAttack3,
+            cyborgDeath, cyborgRun, cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture;
 
-        List<Texture2D> backgrounds;
+        List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
         List<Rectangle> platforms;
         List<Rectangle> ladders;
@@ -33,15 +38,18 @@ namespace Class_system__not_systemic_
         MouseState mouseState;
 
         SpriteEffects daveFlipHorizontally;
-        int[] daveFrames; 
+        int[] daveFrames;
+        int[] cyborgFrames;
         int rows, columns, bgRows, bgColumns;
+        int cyborgColumns;
         int frame;
         int frames;
         int backgroundFrame;
         int backgroundFrames;
 
         int directionRow, bgDraw;
-        int leftRow, rightRow, climbUp, idle;
+        int mouseX, mouseY;
+        int leftRow, rightRow, climbUp, idle, playerjump;
         int width, backgroundWidth;
         int height, backgroundHeight;
 
@@ -51,14 +59,14 @@ namespace Class_system__not_systemic_
         float gravity = 0.3f; // This is how fast player accelerated downwards
         float gravitySpeed = 0f;
         float jumpSpeed = 7f; // This will determine the strength of the jump
-        bool onGround = false;
+        bool onGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false;
 
         string debug = "";
 
         Vector2 playerLocation = new Vector2(10, 10);
         Vector2 playerDirection;
         Vector2 playerSpeed = Vector2.Zero;
-        Rectangle playerCollisionRect, playerDrawRect, window, movingWindow, playGameButton, instructionsButton;
+        Rectangle playerCollisionRect, playerDrawRect, window, gameWindow, movingWindow, playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn;
 
 
         public Game1()
@@ -79,20 +87,27 @@ namespace Class_system__not_systemic_
             _graphics.ApplyChanges();
             window = new Rectangle(0, 0, 800, 500);
             movingWindow = new Rectangle(-800, 0, 800, 500);
+            gameWindow = new Rectangle(0, 0, 800, 500);
+            instructionsMenuPlayBtn = new Rectangle(566, 60, 110, 50);
+            returnToMenuBtn = new Rectangle(680, 60, 110, 50);
 
 
             barriers = new List<Rectangle>();
 
+            
+            barriers.Add(new Rectangle(0, -10, 800, 10));
+            barriers.Add(new Rectangle(-10, 0, 10, 500));
+            barriers.Add(new Rectangle(800, 0, 10, 500));
+            barriers.Add(new Rectangle(0, 500, 800, 10));
+
             barriers.Add(new Rectangle(0, 400, 800, 20)); // Ground
 
-            barriers.Add(new Rectangle(0, 350, 800, 20));
             barriers.Add(new Rectangle(100, 250, 800, 20));
-            barriers.Add(new Rectangle(200, 300, 800, 20));
             barriers.Add(new Rectangle(80, 80, 800, 20));
 
 
             ladders = new List<Rectangle>();
-            ladders.Add(new Rectangle(50, 50, 20, 400));
+            ladders.Add(new Rectangle(50, 50, 20, 350));
 
 
             daveFrames = new int[]{
@@ -110,6 +125,14 @@ namespace Class_system__not_systemic_
             6
             };
 
+            cyborgFrames = new int[]{
+                4,
+                6,
+                6,
+                8,
+                8,
+                6,
+                6 };
 
             speed = 1.5f;
 
@@ -119,6 +142,7 @@ namespace Class_system__not_systemic_
             rightRow = 10;
             climbUp = 3;
             idle = 7;
+            playerjump = 5;
             time = 0.0f;
             bgtime = 0.0f;
             frameSpeed = 0.08f;
@@ -172,9 +196,32 @@ namespace Class_system__not_systemic_
             background6 = Content.Load<Texture2D>("background6");
             background7 = Content.Load<Texture2D>("background7");
             background8 = Content.Load<Texture2D>("background8");
-            startmenuTexture = Content.Load<Texture2D>("startmenu");
+            startmenuTexture = Content.Load<Texture2D>("smokebox");
+            instructionsMenuTexture = Content.Load<Texture2D>("instructionsMenu");
+            levelSelectionMenuTexture = Content.Load<Texture2D>("noLevelComplete");
 
-            
+
+
+            cyborgIdle = Content.Load<Texture2D>("Cyborg_idle");       //0
+            cyborgRun = Content.Load<Texture2D>("Cyborg_run");         //1
+            cyborgAttack1 = Content.Load<Texture2D>("Cyborg_attack1"); //2
+            cyborgAttack2 = Content.Load<Texture2D>("Cyborg_attack2"); //3
+            cyborgAttack3 = Content.Load<Texture2D>("Cyborg_attack3"); //4
+            cyborgPunch = Content.Load<Texture2D>("Cyborg_punch");     //5
+            cyborgDeath = Content.Load<Texture2D>("Cyborg_death");     //6
+
+
+            cyborgSprites = new List<Texture2D>();
+            cyborgSprites.Add(cyborgIdle);    //0
+            cyborgSprites.Add(cyborgRun);     //1
+            cyborgSprites.Add(cyborgAttack1); //2
+            cyborgSprites.Add(cyborgAttack2); //3
+            cyborgSprites.Add(cyborgAttack3); //4
+            cyborgSprites.Add(cyborgPunch);   //5
+            cyborgSprites.Add(cyborgDeath);   //6
+
+
+
 
             // TODO: use this.Content to load your game content here
         }
@@ -184,6 +231,12 @@ namespace Class_system__not_systemic_
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            mouseState = Mouse.GetState();
+            mouseX = mouseState.X;
+            mouseY = mouseState.Y;
+            this.Window.Title = mouseX + " ," + mouseY + " ";
+
+
             if (screen == Screen.StartMenu)
             {
                 mouseState = Mouse.GetState();
@@ -191,7 +244,7 @@ namespace Class_system__not_systemic_
                 if (mouseState.LeftButton == ButtonState.Pressed && playGameButton.Contains(mouseState.Position))
                 
                 {
-                    screen = Screen.Game;
+                    screen = Screen.LevelSelector;
                 }
 
 
@@ -201,15 +254,46 @@ namespace Class_system__not_systemic_
                     screen = Screen.Instructions;
                 }
 
+                window.X += 2;
 
+                if (window.X > window.Width * 7 - 1)
+                {
+                    window.X = -800;
+                }
+
+                movingWindow.X += 2;
+
+                if (movingWindow.X > movingWindow.Width * 7 - 1)
+                {
+                    movingWindow.X = -800;
+                }
 
             }
+
 
             if (screen == Screen.Instructions)
             {
                 mouseState = Mouse.GetState();
+                if (mouseState.LeftButton == ButtonState.Pressed && instructionsMenuPlayBtn.Contains(mouseState.Position))
+                {
+                    screen = Screen.LevelSelector;
+                }
 
+                if (mouseState.LeftButton == ButtonState.Pressed && returnToMenuBtn.Contains(mouseState.Position))
+                {
+                    screen = Screen.StartMenu;
+                }
 
+                
+            }
+
+            if (screen == Screen.LevelSelector)
+            {
+
+                if (yellowCardCaptured == true && redCardCaptured == true == blueCardCaptured == true);
+                {
+                    gameEnd = true;
+                }
 
 
 
@@ -217,7 +301,9 @@ namespace Class_system__not_systemic_
             }
 
 
-            if (screen == Screen.Game)
+
+
+            if (screen == Screen.Level1)
             {
                 mouseState = Mouse.GetState();
                 keyboardState = Keyboard.GetState();
@@ -226,13 +312,7 @@ namespace Class_system__not_systemic_
                 playerLocation += playerDirection * speed;
                 UpdateRects();
                 playerSpeed.X = 0f;
-                //if (keyboardState.IsKeyDown(Keys.A))
-                //    playerSpeed.X += -1f;
-                //if (keyboardState.IsKeyDown(Keys.D))
-                //    playerSpeed.X += 1f;
-                //playerSpeed.X += (int)playerSpeed.X;
 
-                //playerCollisionRect.X += (int)playerSpeed.X;
                 foreach (Rectangle barrier in barriers)
                     if (playerCollisionRect.Intersects(barrier))
                     {
@@ -242,6 +322,7 @@ namespace Class_system__not_systemic_
 
                     }
 
+              
 
                 time += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (time > frameSpeed)
@@ -250,7 +331,7 @@ namespace Class_system__not_systemic_
                     frame = (frame + 1) % daveFrames[directionRow];
                 }
                 //debug += frame.ToString();
-                this.Window.Title = daveFrames[directionRow] + "";
+               
                 bgtime += (float)gameTime.ElapsedGameTime.TotalSeconds;
                 if (bgtime > backgroundFrameSpeed)
                 {
@@ -351,10 +432,23 @@ namespace Class_system__not_systemic_
 
             if (screen == Screen.StartMenu)
             {
-                _spriteBatch.Draw(startmenuTexture, window, Color.White);
-                _spriteBatch.Draw(rectangleTexture, new Rectangle(215, 290, 380, 35), Color.Black * 0.5f);
 
-                _spriteBatch.Draw(rectangleTexture, new Rectangle(215, 330, 380, 35), Color.Black * 0.5f);
+
+                _spriteBatch.Draw(background2, movingWindow, Color.Magenta);
+                _spriteBatch.Draw(background3, new Rectangle(movingWindow.X - movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background4, new Rectangle(movingWindow.X - 2 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background5, new Rectangle(movingWindow.X - 3 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background6, new Rectangle(movingWindow.X - 4 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background7, new Rectangle(movingWindow.X - 6 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background8, new Rectangle(movingWindow.X - 5 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+
+                _spriteBatch.Draw(background1, window, Color.Magenta);
+                //_spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.White);
+
+                _spriteBatch.Draw(startmenuTexture, new Rectangle(0,0, 800, 500), Color.White);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(215, 290, 380, 35), Color.Black * 0.5f);
+
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(215, 330, 380, 35), Color.Black * 0.5f);
 
 
             }
@@ -363,10 +457,20 @@ namespace Class_system__not_systemic_
             if (screen == Screen.Instructions)
             {
 
+                _spriteBatch.Draw(instructionsMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(566, 60, 110, 50), Color.Black * 0.5f);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(680, 60, 110, 50), Color.Black * 0.5f);
+            }
+
+            if (screen == Screen.LevelSelector)
+            {
+                _spriteBatch.Draw(levelSelectionMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
+
 
             }
 
-            if (screen == Screen.Game)
+
+            if (screen == Screen.Level1)
             {
                 _spriteBatch.Draw(background2, movingWindow, Color.Magenta);
                 _spriteBatch.Draw(background3, new Rectangle(movingWindow.X - movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
@@ -378,7 +482,7 @@ namespace Class_system__not_systemic_
 
                 _spriteBatch.Draw(background1, window, Color.Magenta);
 
-                _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.White);
+                _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
 
                 //_spriteBatch.Draw(backgroundSpriteSheet, window,
                 //    new Rectangle(backgroundFrame * backgroundWidth, bgDraw * backgroundHeight, backgroundWidth, backgroundHeight),
@@ -386,15 +490,15 @@ namespace Class_system__not_systemic_
 
 
 
-                //foreach (Rectangle barrier in barriers)
-                //{
-                //    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue);
-                //}
+                foreach (Rectangle barrier in barriers)
+                {
+                    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
+                }
 
-                //foreach (Rectangle ladder in ladders)
-                //{
-                //    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue);
-                //}
+                foreach (Rectangle ladder in ladders)
+                {
+                    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
+                }
 
                 _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
                 _spriteBatch.Draw(characterSpriteSheet, playerDrawRect,
@@ -463,10 +567,41 @@ namespace Class_system__not_systemic_
                 daveFlipHorizontally = SpriteEffects.None;
             }
 
+
             if (keyboardState.IsKeyDown(Keys.A))
-                playerDirection.X -= 1;
+            {
+                if (keyboardState.IsKeyDown(Keys.A) && keyboardState.IsKeyDown(Keys.LeftControl))
+                {
+                    playerDirection.X -= 1;
+                    speed = 4f;
+                }
+                else
+                {
+                    if (keyboardState.IsKeyDown(Keys.A))
+                    {
+                        playerDirection.X -= 1;
+                        speed = 1.5f;
+                    }
+                }
+            }
+
             if (keyboardState.IsKeyDown(Keys.D))
-                playerDirection.X += 1;
+            {
+                if (keyboardState.IsKeyDown(Keys.D) && keyboardState.IsKeyDown(Keys.LeftControl))
+                {
+                    playerDirection.X += 1;
+                    speed = 4f;
+                }
+                else
+                {
+                    if (keyboardState.IsKeyDown(Keys.D))
+                    {
+                        playerDirection.X += 1;
+                        speed = 1.5f;
+                    }
+                }
+            }
+                       
 
             foreach (Rectangle ladder in ladders)
             {
@@ -492,7 +627,8 @@ namespace Class_system__not_systemic_
             }
                 
 
-
+            //if (!onGround && keyboardState.IsKeyDown(Keys.Space))
+            //        directionRow = playerjump;
            
 
             if (playerDirection != Vector2.Zero)
@@ -505,6 +641,7 @@ namespace Class_system__not_systemic_
                     directionRow = climbUp;
                 else if (playerDirection.Y > 0) // Moving down
                     directionRow = climbUp;
+               
 
 
 
@@ -525,6 +662,7 @@ namespace Class_system__not_systemic_
                     directionRow = leftRow;
                 else if (playerDirection.X > 0) // Moving right
                     directionRow = rightRow;
+
 
 
 
