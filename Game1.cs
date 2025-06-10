@@ -104,11 +104,11 @@ namespace Class_system__not_systemic_
             barriers.Add(new Rectangle(0, 400, 800, 20)); // Ground
 
             barriers.Add(new Rectangle(100, 250, 800, 20));
-            barriers.Add(new Rectangle(80, 80, 800, 20));
+            barriers.Add(new Rectangle(100, 80, 800, 20));
 
 
             ladders = new List<Rectangle>();
-            ladders.Add(new Rectangle(50, 50, 20, 350));
+            ladders.Add(new Rectangle(50, 50, 35, 350));
 
 
             daveFrames = new int[]{
@@ -250,7 +250,7 @@ namespace Class_system__not_systemic_
                 }
 
 
-                if (mouseState.LeftButton == ButtonState.Pressed && instructionsButton.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                else if (mouseState.LeftButton == ButtonState.Pressed && instructionsButton.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
 
                 {
                     screen = Screen.Instructions;
@@ -265,7 +265,7 @@ namespace Class_system__not_systemic_
 
                 movingWindow.X += 2;
 
-                if (movingWindow.X > movingWindow.Width * 7 - 1)
+                if (movingWindow.X > movingWindow.Width * 7 - 1) 
                 {
                     movingWindow.X = -800;
                 }
@@ -273,7 +273,7 @@ namespace Class_system__not_systemic_
             }
 
 
-            if (screen == Screen.Instructions)
+            else if (screen == Screen.Instructions)
             {
                 mouseState = Mouse.GetState();
                 if (mouseState.LeftButton == ButtonState.Pressed && instructionsMenuPlayBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
@@ -289,21 +289,24 @@ namespace Class_system__not_systemic_
                 
             }
 
-            if (screen == Screen.LevelSelector)
+            else if (screen == Screen.LevelSelector)
             {
                 mouseState = Mouse.GetState();
 
-                if(mouseState.LeftButton == ButtonState.Pressed && yellowCardBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                if(mouseState.LeftButton == ButtonState.Pressed && yellowCardBtn.Contains(mouseState.Position) 
+                    && prevMouseState.LeftButton == ButtonState.Released && !yellowCardCaptured)
                 {
                     screen = Screen.Level1;
                 }
 
-                if (mouseState.LeftButton == ButtonState.Pressed && redCardBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                if (mouseState.LeftButton == ButtonState.Pressed && redCardBtn.Contains(mouseState.Position) 
+                    && prevMouseState.LeftButton == ButtonState.Released && !redCardCaptured)
                 {
                     screen = Screen.Level2;
                 }
 
-                if (mouseState.LeftButton == ButtonState.Pressed && blueCardBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
+                if (mouseState.LeftButton == ButtonState.Pressed && blueCardBtn.Contains(mouseState.Position)
+                    && prevMouseState.LeftButton == ButtonState.Released && !blueCardCaptured)
                 {
                     screen = Screen.Level3;
                 }
@@ -313,16 +316,10 @@ namespace Class_system__not_systemic_
                 {
                     gameEnd = true;
                 }
-
-
-
-
             }
 
 
-
-
-            if (screen == Screen.Level1)
+            else if (screen == Screen.Level1)
             {
                 mouseState = Mouse.GetState();
                 keyboardState = Keyboard.GetState();
@@ -337,8 +334,6 @@ namespace Class_system__not_systemic_
                     {
                         playerLocation -= playerDirection * speed;
                         UpdateRects();
-
-
                     }
 
               
@@ -429,7 +424,7 @@ namespace Class_system__not_systemic_
                 }               
             }
 
-            if (screen == Screen.EndScreen)
+            else if (screen == Screen.EndScreen)
             {
 
             }
