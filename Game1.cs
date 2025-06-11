@@ -28,7 +28,7 @@ namespace Class_system__not_systemic_
         Screen screen;
         Texture2D characterSpriteSheet, rectangleTexture, backgroundSpriteSheet, currentBackgroundTexture, background1, background2, background3,
             background4, background5, background6, background7, background8, trainTexture, startmenuTexture, instructionsMenuTexture, cyborgAttack1, cyborgAttack2, cyborgAttack3,
-            cyborgDeath, cyborgRun, cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture;
+            cyborgDeath, cyborgRun, cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
@@ -46,6 +46,7 @@ namespace Class_system__not_systemic_
         int frames;
         int backgroundFrame;
         int backgroundFrames;
+        int enemyBallSpeedX = 1;
 
         int directionRow, bgDraw;
         int mouseX, mouseY;
@@ -61,13 +62,22 @@ namespace Class_system__not_systemic_
         float jumpSpeed = 7f; // This will determine the strength of the jump
         bool onGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false;
 
+        float cyborgSpeed;
+        float cyborgFrameSpeed;
+        float cyborgTime;
+        float enemyBallRotation;
+
+
+
+
         string debug = "";
 
         Vector2 playerLocation = new Vector2(10, 10);
         Vector2 playerDirection;
         Vector2 playerSpeed = Vector2.Zero;
         Rectangle playerCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
-            playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, yellowCardBtn, redCardBtn, blueCardBtn;
+            playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, 
+            yellowCardBtn, redCardBtn, blueCardBtn, enemyBallRect;
 
 
         public Game1()
@@ -91,7 +101,7 @@ namespace Class_system__not_systemic_
             gameWindow = new Rectangle(0, 0, 800, 500);
             instructionsMenuPlayBtn = new Rectangle(566, 60, 110, 50);
             returnToMenuBtn = new Rectangle(680, 60, 110, 50);
-
+            enemyBallRect = new Rectangle(300, 250, 50, 50);
 
             barriers = new List<Rectangle>();
 
@@ -135,6 +145,7 @@ namespace Class_system__not_systemic_
                 6,
                 6 };
 
+           
             speed = 1.5f;
 
             columns = 8;
@@ -157,6 +168,7 @@ namespace Class_system__not_systemic_
             backgroundFrames = 5;
             backgroundFrame = 0;
 
+            enemyBallRotation = 0f;
 
             directionRow = leftRow;
 
@@ -190,6 +202,7 @@ namespace Class_system__not_systemic_
             rectangleTexture = Content.Load<Texture2D>("rectangle");
             characterSpriteSheet = Content.Load<Texture2D>("daveSpriteSheet");
             trainTexture = Content.Load<Texture2D>("trainTexture");
+            enemyBall = Content.Load<Texture2D>("enemyBall");
 
             background1 = Content.Load<Texture2D>("background1override");
             background2 = Content.Load<Texture2D>("background2");
@@ -328,6 +341,10 @@ namespace Class_system__not_systemic_
                 playerLocation += playerDirection * speed;
                 UpdateRects();
                 playerSpeed.X = 0f;
+                enemyBallRotation += 0.15f;
+                enemyBallRect.X -= enemyBallSpeedX;
+
+
 
                 foreach (Rectangle barrier in barriers)
                     if (playerCollisionRect.Intersects(barrier))
@@ -525,6 +542,15 @@ namespace Class_system__not_systemic_
                     daveFlipHorizontally,
                     0
                     );
+
+
+                _spriteBatch.Draw(enemyBall, enemyBallRect, 
+                   null, 
+                   Color.White, 
+                   enemyBallRotation, 
+                   new Vector2(enemyBall.Width / 2, enemyBall.Height / 2),
+                   SpriteEffects.None,
+                   0f);
             }
             
             if (screen == Screen.EndScreen)
