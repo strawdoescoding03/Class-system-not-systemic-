@@ -101,7 +101,7 @@ namespace Class_system__not_systemic_
             gameWindow = new Rectangle(0, 0, 800, 500);
             instructionsMenuPlayBtn = new Rectangle(566, 60, 110, 50);
             returnToMenuBtn = new Rectangle(680, 60, 110, 50);
-            enemyBallRect = new Rectangle(300, 250, 50, 50);
+            enemyBallRect = new Rectangle(300, 150, 50, 50);
 
             barriers = new List<Rectangle>();
 
@@ -398,6 +398,7 @@ namespace Class_system__not_systemic_
                 }
 
                 playerLocation.Y += gravitySpeed;
+                enemyBallRect.Y += (int)gravitySpeed;
                 UpdateRects();
                 // Hitting a platform while moving vertically
                 foreach (Rectangle barrier in barriers)
@@ -416,6 +417,8 @@ namespace Class_system__not_systemic_
                             onGround = true;
                             gravitySpeed = 0;
                         }
+
+                     
                         //playerLocation.Y -= playerDirection * speed;
                         UpdateRects();
 
