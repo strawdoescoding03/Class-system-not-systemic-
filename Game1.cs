@@ -26,9 +26,11 @@ namespace Class_system__not_systemic_
         private SpriteBatch _spriteBatch;
 
         Screen screen;
-        Texture2D characterSpriteSheet, rectangleTexture, backgroundSpriteSheet, currentBackgroundTexture, background1, background2, background3,
-            background4, background5, background6, background7, background8, trainTexture, startmenuTexture, instructionsMenuTexture, cyborgAttack1, cyborgAttack2, cyborgAttack3,
-            cyborgDeath, cyborgRun, cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall;
+        Texture2D characterSpriteSheet, rectangleTexture, backgroundSpriteSheet, currentBackgroundTexture, background1, 
+            background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
+            instructionsMenuTexture, cyborgAttack1, cyborgAttack2, cyborgAttack3, cyborgDeath, cyborgRun, 
+            cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
+            blueKeyCardTexture, redKeyCardTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
