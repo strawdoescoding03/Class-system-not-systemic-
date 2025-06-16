@@ -28,9 +28,9 @@ namespace Class_system__not_systemic_
         Screen screen;
         Texture2D characterSpriteSheet, rectangleTexture, backgroundSpriteSheet, currentBackgroundTexture, background1, 
             background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
-            instructionsMenuTexture, cyborgAttack1, cyborgAttack2, cyborgAttack3, cyborgDeath, cyborgRun, 
+            instructionsMenuTexture, cyborgDeath, cyborgRun, 
             cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
-            blueKeyCardTexture, redKeyCardTexture;
+            blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
@@ -61,8 +61,10 @@ namespace Class_system__not_systemic_
         float frameSpeed, backgroundFrameSpeed;
         float gravity = 0.3f; // This is how fast player accelerated downwards
         float gravitySpeed = 0f;
+        float ballGravitySpeed = 2f;
         float jumpSpeed = 7f; // This will determine the strength of the jump
-        bool onGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false;
+        bool onGround = false, ballOnGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false,
+            canExitYellow = false, canExitRed = false, canExitBlue = false;
 
         float cyborgSpeed;
         float cyborgFrameSpeed;
@@ -75,11 +77,14 @@ namespace Class_system__not_systemic_
         string debug = "";
 
         Vector2 playerLocation = new Vector2(10, 10);
+        Vector2 enemyBallLocation = new Vector2(700, 150);
+        Vector2 enemyBallDirection = Vector2.Zero;
         Vector2 playerDirection;
         Vector2 playerSpeed = Vector2.Zero;
-        Rectangle playerCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
-            playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, 
-            yellowCardBtn, redCardBtn, blueCardBtn, enemyBallRect;
+        Rectangle playerCollisionRect, enemyBallCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
+            playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, enemyBallDrawRect, 
+            yellowCardBtn, redCardBtn, blueCardBtn, yellowKeyCardCollectable, redKeyCardCollectable, blueKeyCardCollectable, enemyBallRect, 
+            exitDoorRect;
 
 
         public Game1()
@@ -103,8 +108,9 @@ namespace Class_system__not_systemic_
             gameWindow = new Rectangle(0, 0, 800, 500);
             instructionsMenuPlayBtn = new Rectangle(566, 60, 110, 50);
             returnToMenuBtn = new Rectangle(680, 60, 110, 50);
-            enemyBallRect = new Rectangle(300, 150, 50, 50);
-
+            enemyBallCollisionRect = new Rectangle(700, 100, 50, 50);
+            enemyBallDrawRect = new Rectangle(700, 100, 50, 50);
+            
             barriers = new List<Rectangle>();
 
             
@@ -115,12 +121,13 @@ namespace Class_system__not_systemic_
 
             barriers.Add(new Rectangle(0, 400, 800, 20)); // Ground
 
-            barriers.Add(new Rectangle(100, 250, 800, 20));
-            barriers.Add(new Rectangle(100, 80, 800, 20));
+            barriers.Add(new Rectangle(600, 225, 150, 10));
+            barriers.Add(new Rectangle(0, 65, 150, 10));
 
 
             ladders = new List<Rectangle>();
-            ladders.Add(new Rectangle(50, 50, 35, 350));
+            ladders.Add(new Rectangle(754, 50, 35, 350)); 
+            ladders.Add(new Rectangle(155, 60, 35, 250));
 
 
             daveFrames = new int[]{
@@ -181,6 +188,14 @@ namespace Class_system__not_systemic_
 
             playGameButton = new Rectangle(215, 290, 380, 35);
             instructionsButton = new Rectangle(215, 330, 380, 35);
+            exitDoorRect = new Rectangle (500, 225, 400, 176);
+
+
+            yellowKeyCardCollectable = new Rectangle(215, 350, 50, 50);
+            redKeyCardCollectable = new Rectangle(215, 350, 50, 50);
+            blueKeyCardCollectable = new Rectangle(215, 350, 50, 50);
+
+
 
             UpdateRects();
 
@@ -203,6 +218,12 @@ namespace Class_system__not_systemic_
 
             rectangleTexture = Content.Load<Texture2D>("rectangle");
             characterSpriteSheet = Content.Load<Texture2D>("daveSpriteSheet");
+            exitDoorTexture = Content.Load<Texture2D>("ExitDoorUnlocked");
+            yellowLockDoor = Content.Load<Texture2D>("yellowLevelExitDoorLocked");
+            redLockDoor = Content.Load<Texture2D>("redLevelExitDoorLocked");
+            blueLockDoor = Content.Load<Texture2D>("blueLevelExitDoorLocked");
+
+
             trainTexture = Content.Load<Texture2D>("trainTexture");
             enemyBall = Content.Load<Texture2D>("enemyBall");
 
@@ -222,22 +243,11 @@ namespace Class_system__not_systemic_
 
             cyborgIdle = Content.Load<Texture2D>("Cyborg_idle");       //0
             cyborgRun = Content.Load<Texture2D>("Cyborg_run");         //1
-            cyborgAttack1 = Content.Load<Texture2D>("Cyborg_attack1"); //2
-            cyborgAttack2 = Content.Load<Texture2D>("Cyborg_attack2"); //3
-            cyborgAttack3 = Content.Load<Texture2D>("Cyborg_attack3"); //4
-            cyborgPunch = Content.Load<Texture2D>("Cyborg_punch");     //5
-            cyborgDeath = Content.Load<Texture2D>("Cyborg_death");     //6
+            
 
-
-            cyborgSprites = new List<Texture2D>();
-            cyborgSprites.Add(cyborgIdle);    //0
-            cyborgSprites.Add(cyborgRun);     //1
-            cyborgSprites.Add(cyborgAttack1); //2
-            cyborgSprites.Add(cyborgAttack2); //3
-            cyborgSprites.Add(cyborgAttack3); //4
-            cyborgSprites.Add(cyborgPunch);   //5
-            cyborgSprites.Add(cyborgDeath);   //6
-
+            yellowKeyCardTexture = Content.Load<Texture2D>("yellowCard");
+            redKeyCardTexture = Content.Load<Texture2D>("redCard");
+            blueKeyCardTexture = Content.Load<Texture2D>("blueCard");
 
 
 
@@ -336,6 +346,7 @@ namespace Class_system__not_systemic_
 
             else if (screen == Screen.Level1)
             {
+
                 mouseState = Mouse.GetState();
                 keyboardState = Keyboard.GetState();
 
@@ -343,17 +354,9 @@ namespace Class_system__not_systemic_
                 playerLocation += playerDirection * speed;
                 UpdateRects();
                 playerSpeed.X = 0f;
+                enemyBallDirection.X -= 0.01f;
                 enemyBallRotation += 0.15f;
-                enemyBallRect.X -= enemyBallSpeedX;
-
-
-
-                foreach (Rectangle barrier in barriers)
-                    if (playerCollisionRect.Intersects(barrier))
-                    {
-                        playerLocation -= playerDirection * speed;
-                        UpdateRects();
-                    }
+                enemyBallLocation.X += enemyBallDirection.X * enemyBallSpeedX;
 
               
 
@@ -372,6 +375,24 @@ namespace Class_system__not_systemic_
                     bgtime = 0f;
                 }
 
+
+                //backgroundCODE!!!
+
+                currentBackgroundTexture = background1;
+
+                window.X += 2;
+
+                if (window.X > window.Width * 7 - 1)
+                {
+                    window.X = -800;
+                }
+
+                movingWindow.X += 2;
+
+                if (movingWindow.X > movingWindow.Width * 7 - 1)
+                {
+                    movingWindow.X = -800;
+                }
 
                 if (!onGround)
                 {
@@ -400,31 +421,101 @@ namespace Class_system__not_systemic_
                 }
 
                 playerLocation.Y += gravitySpeed;
-                enemyBallRect.Y += (int)gravitySpeed;
+                enemyBallLocation.Y += ballGravitySpeed;
+
                 UpdateRects();
-                // Hitting a platform while moving vertically
+                //Ball hitting barriers
+
                 foreach (Rectangle barrier in barriers)
                     if (playerCollisionRect.Intersects(barrier))
                     {
-                        // Moving Up
-                        if (gravitySpeed < 0)
+                        playerLocation -= playerDirection * speed;
+                        UpdateRects();
+                    }
+
+                foreach (Rectangle barrier in barriers)
+                {
+                    if (enemyBallCollisionRect.Intersects(barrier))
+                    {
+                        enemyBallLocation.Y = barrier.Top - enemyBallCollisionRect.Height;
+                        ballGravitySpeed = 0;
+                    }
+                    else
+                    {
+                        ballGravitySpeed = 2;
+                    }
+                }
+
+                //Hitting a platform while moving vertically
+                foreach (Rectangle barrier in barriers)
+                    if (playerCollisionRect.Intersects(barrier))
+                    {
+                        //Moving Up
+                                if (gravitySpeed < 0)
                         {
                             playerLocation.Y = barrier.Bottom;
                             gravitySpeed = 0;
                         }
                         //Moving Down
-                        else if (gravitySpeed > 0)
+                                else if (gravitySpeed > 0)
                         {
                             playerLocation.Y = barrier.Top - playerCollisionRect.Height;
                             onGround = true;
                             gravitySpeed = 0;
                         }
-
-                     
-                        //playerLocation.Y -= playerDirection * speed;
                         UpdateRects();
-
                     }
+
+                //Keycard Grabbers: 
+                if (playerCollisionRect.Intersects(yellowKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
+                {
+                    yellowCardCaptured = true;                    
+                }
+
+                //Exit Door
+
+                if (playerCollisionRect.Intersects(exitDoorRect) && yellowCardCaptured && keyboardState.IsKeyDown(Keys.E))
+                {
+                    canExitYellow = true;
+                }
+
+                else if (canExitYellow)
+                {
+                    screen = Screen.LevelSelector;
+                }
+
+            }
+
+            else if (screen == Screen.Level2)
+            {
+
+                mouseState = Mouse.GetState();
+                keyboardState = Keyboard.GetState();
+
+                SetPlayerDirection();
+                playerLocation += playerDirection * speed;
+                UpdateRects();
+                playerSpeed.X = 0f;
+                enemyBallDirection.X -= 0.01f;
+                enemyBallRotation += 0.15f;
+                enemyBallLocation.X += enemyBallDirection.X * enemyBallSpeedX;
+
+
+
+                time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (time > frameSpeed)
+                {
+                    time = 0f;
+                    frame = (frame + 1) % daveFrames[directionRow];
+                }
+                //debug += frame.ToString();
+
+                bgtime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (bgtime > backgroundFrameSpeed)
+                {
+                    backgroundFrame = (1 + backgroundFrame) % backgroundFrames;
+                    bgtime = 0f;
+                }
 
 
                 //backgroundCODE!!!
@@ -443,17 +534,108 @@ namespace Class_system__not_systemic_
                 if (movingWindow.X > movingWindow.Width * 7 - 1)
                 {
                     movingWindow.X = -800;
-                }               
+                }
+
+                if (!onGround)
+                {
+                    gravitySpeed += gravity;
+                }
+                else if (keyboardState.IsKeyDown(Keys.Space) && onGround)
+                {
+                    gravitySpeed = -jumpSpeed;
+                    onGround = false;
+                }
+                else if (keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.W))
+                {
+                    onGround = true;
+                    gravitySpeed = 0f;
+                }
+
+                else gravitySpeed += gravity;
+
+                foreach (Rectangle ladder in ladders)
+                {
+                    if (playerCollisionRect.Intersects(ladder))
+                    {
+                        gravitySpeed = 0;
+                    }
+
+                }
+
+                playerLocation.Y += gravitySpeed;
+                enemyBallLocation.Y += ballGravitySpeed;
+
+                UpdateRects();
+                //Ball hitting barriers
+
+                foreach (Rectangle barrier in barriers)
+                    if (playerCollisionRect.Intersects(barrier))
+                    {
+                        playerLocation -= playerDirection * speed;
+                        UpdateRects();
+                    }
+
+                foreach (Rectangle barrier in barriers)
+                {
+                    if (enemyBallCollisionRect.Intersects(barrier))
+                    {
+                        enemyBallLocation.Y = barrier.Top - enemyBallCollisionRect.Height;
+                        ballGravitySpeed = 0;
+                    }
+                    else
+                    {
+                        ballGravitySpeed = 2;
+                    }
+                }
+
+                //Hitting a platform while moving vertically
+                foreach (Rectangle barrier in barriers)
+                    if (playerCollisionRect.Intersects(barrier))
+                    {
+                        //Moving Up
+                        if (gravitySpeed < 0)
+                        {
+                            playerLocation.Y = barrier.Bottom;
+                            gravitySpeed = 0;
+                        }
+                        //Moving Down
+                        else if (gravitySpeed > 0)
+                        {
+                            playerLocation.Y = barrier.Top - playerCollisionRect.Height;
+                            onGround = true;
+                            gravitySpeed = 0;
+                        }
+                        UpdateRects();
+                    }
+
+                //Keycard Grabbers: 
+                if (playerCollisionRect.Intersects(redKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
+                {
+                    redCardCaptured = true;
+                }
+
+                //Exit Door
+
+                if (playerCollisionRect.Intersects(exitDoorRect) && redCardCaptured && keyboardState.IsKeyDown(Keys.E))
+                {
+                    canExitRed = true;
+                }
+
+                else if (canExitRed)
+                {
+                    screen = Screen.LevelSelector;
+                }
+
+
+
+
             }
+
 
             else if (screen == Screen.EndScreen)
             {
 
             }
-
-
-
-
 
             base.Update(gameTime);
         }
@@ -502,9 +684,21 @@ namespace Class_system__not_systemic_
             {
                 _spriteBatch.Draw(levelSelectionMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
 
-                _spriteBatch.Draw(rectangleTexture, new Rectangle(165, 232, 125, 110), Color.White * 0.5f);
-                _spriteBatch.Draw(rectangleTexture, new Rectangle(339, 232, 125, 110), Color.White * 0.5f);
-                _spriteBatch.Draw(rectangleTexture, new Rectangle(512, 232, 125, 110), Color.White * 0.5f);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(165, 232, 125, 110), Color.White * 0.15f);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(339, 232, 125, 110), Color.White * 0.15f);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(512, 232, 125, 110), Color.White * 0.15f);
+
+                
+                if (yellowCardCaptured == true)
+                    _spriteBatch.Draw(yellowKeyCardTexture, new Rectangle(185, 251, 80, 80), Color.White);
+
+
+                if (redCardCaptured == true)
+                    _spriteBatch.Draw(redKeyCardTexture, new Rectangle(359, 251, 80, 80), Color.White);
+
+                if (blueCardCaptured == true)
+                    _spriteBatch.Draw(blueKeyCardTexture, new Rectangle(532, 251, 80, 80), Color.White);
+
             }
 
 
@@ -522,11 +716,20 @@ namespace Class_system__not_systemic_
 
                 _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
 
-                //_spriteBatch.Draw(backgroundSpriteSheet, window,
-                //    new Rectangle(backgroundFrame * backgroundWidth, bgDraw * backgroundHeight, backgroundWidth, backgroundHeight),
-                //    Color.White);
+                if (yellowCardCaptured == false)
+                {
+                    _spriteBatch.Draw(yellowKeyCardTexture, yellowKeyCardCollectable, Color.White);
+                }
 
+                if (canExitYellow == false)
+                {
+                    _spriteBatch.Draw(yellowLockDoor, new Rectangle(500, 225, exitDoorTexture.Width, exitDoorTexture.Height), Color.Magenta);
+                }
 
+                else
+                {
+                    _spriteBatch.Draw(exitDoorTexture, new Rectangle(500, 225, exitDoorTexture.Width, exitDoorTexture.Height), Color.Magenta);
+                }
 
                 foreach (Rectangle barrier in barriers)
                 {
@@ -548,25 +751,87 @@ namespace Class_system__not_systemic_
                     0
                     );
 
-
-                _spriteBatch.Draw(enemyBall, enemyBallRect, 
-                   null, 
-                   Color.White, 
-                   enemyBallRotation, 
+                _spriteBatch.Draw(enemyBall, new Rectangle(enemyBallCollisionRect.X +25, enemyBallCollisionRect.Y +25, enemyBallCollisionRect.Width, enemyBallCollisionRect.Height),
+                   null,
+                   Color.White,
+                   enemyBallRotation,
                    new Vector2(enemyBall.Width / 2, enemyBall.Height / 2),
                    SpriteEffects.None,
                    0f);
+
+                
+
             }
-            
-            if (screen == Screen.EndScreen)
+
+            if (screen == Screen.Level2)
+            {
+                _spriteBatch.Draw(background2, movingWindow, Color.Magenta);
+                _spriteBatch.Draw(background3, new Rectangle(movingWindow.X - movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background4, new Rectangle(movingWindow.X - 2 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background5, new Rectangle(movingWindow.X - 3 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background6, new Rectangle(movingWindow.X - 4 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background7, new Rectangle(movingWindow.X - 6 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background8, new Rectangle(movingWindow.X - 5 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+
+                _spriteBatch.Draw(background1, window, Color.Magenta);
+
+                _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
+
+                if (redCardCaptured == false)
+                {
+                    _spriteBatch.Draw(redKeyCardTexture, redKeyCardCollectable, Color.White);
+                }
+
+                if (canExitRed == false)
+                {
+                    _spriteBatch.Draw(redLockDoor, new Rectangle(500, 225, exitDoorTexture.Width, exitDoorTexture.Height), Color.Magenta);
+                }
+
+                else
+                {
+                    _spriteBatch.Draw(exitDoorTexture, new Rectangle(500, 225, exitDoorTexture.Width, exitDoorTexture.Height), Color.Magenta);
+                }
+
+                foreach (Rectangle barrier in barriers)
+                {
+                    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
+                }
+
+                foreach (Rectangle ladder in ladders)
+                {
+                    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
+                }
+
+                _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
+                _spriteBatch.Draw(characterSpriteSheet, playerDrawRect,
+                    new Rectangle(frame * width, directionRow * height, width, height),
+                    Color.White,
+                    0,
+                    new((int)playerDrawRect.Width / 2, 0),
+                    daveFlipHorizontally,
+                    0
+                    );
+
+                _spriteBatch.Draw(enemyBall, new Rectangle(enemyBallCollisionRect.X + 25, enemyBallCollisionRect.Y + 25, enemyBallCollisionRect.Width, enemyBallCollisionRect.Height),
+                   null,
+                   Color.White,
+                   enemyBallRotation,
+                   new Vector2(enemyBall.Width / 2, enemyBall.Height / 2),
+                   SpriteEffects.None,
+                   0f);
+
+            }
+
+
+
+
+
+
+
+                if (screen == Screen.EndScreen)
             {
 
             }
-
-
-
-
-           
 
             _spriteBatch.End();
 
@@ -575,32 +840,79 @@ namespace Class_system__not_systemic_
 
         public void UpdateRects() 
         {
-            playerCollisionRect.Location = playerLocation.ToPoint();
-            playerDrawRect.X = playerCollisionRect.X;
-            
-            if (directionRow == climbUp)
+            if (screen == Screen.Level1)
             {
+                enemyBallCollisionRect.Location = enemyBallLocation.ToPoint();
+                playerCollisionRect.Location = playerLocation.ToPoint();
+                playerDrawRect.X = playerCollisionRect.X;
 
-                playerDrawRect.X = playerCollisionRect.X - 5;
-                playerDrawRect.Y = playerCollisionRect.Y - 10;
+                if (directionRow == climbUp)
+                {
 
+                    playerDrawRect.X = playerCollisionRect.X - 5;
+                    playerDrawRect.Y = playerCollisionRect.Y - 10;
+
+                }
+
+                else
+                    playerDrawRect.Y = playerCollisionRect.Y;
+
+                if (daveFlipHorizontally == SpriteEffects.FlipHorizontally)
+                {
+                    playerDrawRect.X = playerCollisionRect.X;
+                }
             }
 
-            else
-                playerDrawRect.Y = playerCollisionRect.Y;
-
-            if (daveFlipHorizontally == SpriteEffects.FlipHorizontally)
+            if (screen == Screen.Level2)
             {
+                enemyBallCollisionRect.Location = enemyBallLocation.ToPoint();
+                playerCollisionRect.Location = playerLocation.ToPoint();
                 playerDrawRect.X = playerCollisionRect.X;
+
+                if (directionRow == climbUp)
+                {
+
+                    playerDrawRect.X = playerCollisionRect.X - 5;
+                    playerDrawRect.Y = playerCollisionRect.Y - 10;
+
+                }
+
+                else
+                    playerDrawRect.Y = playerCollisionRect.Y;
+
+                if (daveFlipHorizontally == SpriteEffects.FlipHorizontally)
+                {
+                    playerDrawRect.X = playerCollisionRect.X;
+                }
+            }
+
+            if (screen == Screen.Level3)
+            {
+                enemyBallCollisionRect.Location = enemyBallLocation.ToPoint();
+                playerCollisionRect.Location = playerLocation.ToPoint();
+                playerDrawRect.X = playerCollisionRect.X;
+
+                if (directionRow == climbUp)
+                {
+
+                    playerDrawRect.X = playerCollisionRect.X - 5;
+                    playerDrawRect.Y = playerCollisionRect.Y - 10;
+
+                }
+
+                else
+                    playerDrawRect.Y = playerCollisionRect.Y;
+
+                if (daveFlipHorizontally == SpriteEffects.FlipHorizontally)
+                {
+                    playerDrawRect.X = playerCollisionRect.X;
+                }
             }
 
         }
 
         private void SetPlayerDirection()
         {       
-
-
-
             playerDirection = Vector2.Zero;
 
             //move to other method
