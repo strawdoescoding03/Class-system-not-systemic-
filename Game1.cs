@@ -466,6 +466,15 @@ namespace Class_system__not_systemic_
                         UpdateRects();
                     }
 
+                //Ball harm player yay!
+
+                if (enemyBallCollisionRect.Intersects(playerCollisionRect))
+                {
+
+                }
+
+
+
                 //Keycard Grabbers: 
                 if (playerCollisionRect.Intersects(yellowKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
                 {
