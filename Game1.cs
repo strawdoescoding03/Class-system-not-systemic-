@@ -258,6 +258,7 @@ namespace Class_system__not_systemic_
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
+            keyboardState = Keyboard.GetState();
             prevMouseState = mouseState;
             mouseState = Mouse.GetState();
             mouseX = mouseState.X;
@@ -300,7 +301,6 @@ namespace Class_system__not_systemic_
 
             else if (screen == Screen.Instructions)
             {
-                mouseState = Mouse.GetState();
                 if (mouseState.LeftButton == ButtonState.Pressed && instructionsMenuPlayBtn.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     screen = Screen.LevelSelector;
@@ -316,7 +316,6 @@ namespace Class_system__not_systemic_
 
             else if (screen == Screen.LevelSelector)
             {
-                mouseState = Mouse.GetState();
 
                 if(mouseState.LeftButton == ButtonState.Pressed && yellowCardBtn.Contains(mouseState.Position) 
                     && prevMouseState.LeftButton == ButtonState.Released && !yellowCardCaptured)
@@ -327,7 +326,10 @@ namespace Class_system__not_systemic_
                 if (mouseState.LeftButton == ButtonState.Pressed && redCardBtn.Contains(mouseState.Position) 
                     && prevMouseState.LeftButton == ButtonState.Released && !redCardCaptured)
                 {
+                    playerLocation = new Vector2(10, 30);
+                    UpdateRects();
                     screen = Screen.Level2;
+                    
                 }
 
                 if (mouseState.LeftButton == ButtonState.Pressed && blueCardBtn.Contains(mouseState.Position)
@@ -499,11 +501,13 @@ namespace Class_system__not_systemic_
             {
 
                 mouseState = Mouse.GetState();
-                keyboardState = Keyboard.GetState();
+                
+
 
                 SetPlayerDirection();
                 playerLocation += playerDirection * speed;
                 UpdateRects();
+
                 playerSpeed.X = 0f;
                 enemyBallDirection.X -= 0.01f;
                 enemyBallRotation += 0.15f;
