@@ -30,7 +30,8 @@ namespace Class_system__not_systemic_
             background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
             instructionsMenuTexture, cyborgDeath, cyborgRun, 
             cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
-            blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture;
+            blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture,
+            twoHeartsTexture, threeHeartsTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
@@ -55,6 +56,8 @@ namespace Class_system__not_systemic_
         int leftRow, rightRow, climbUp, idle, playerjump;
         int width, backgroundWidth;
         int height, backgroundHeight;
+        int lifeCount = 0;
+
 
         float speed;
         float time, bgtime;
@@ -64,7 +67,7 @@ namespace Class_system__not_systemic_
         float ballGravitySpeed = 2f;
         float jumpSpeed = 7f; // This will determine the strength of the jump
         bool onGround = false, ballOnGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false,
-            canExitYellow = false, canExitRed = false, canExitBlue = false;
+            canExitYellow = false, canExitRed = false, canExitBlue = false, playerDeathCheck = false;
 
         float cyborgSpeed;
         float cyborgFrameSpeed;
