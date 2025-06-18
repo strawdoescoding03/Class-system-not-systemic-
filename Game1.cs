@@ -31,10 +31,11 @@ namespace Class_system__not_systemic_
             instructionsMenuTexture, cyborgDeath, cyborgRun, 
             cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
             blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture,
-            twoHeartsTexture, threeHeartsTexture;
+            twoHeartsTexture, fullHeartsTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
+        List<Rectangle> verticalBarriers;
         List<Rectangle> platforms;
         List<Rectangle> ladders;
         KeyboardState keyboardState;
@@ -49,14 +50,14 @@ namespace Class_system__not_systemic_
         int frames;
         int backgroundFrame;
         int backgroundFrames;
-        int enemyBallSpeedX = 1;
+        int enemyBallSpeedX = 2;
 
         int directionRow, bgDraw;
         int mouseX, mouseY;
         int leftRow, rightRow, climbUp, idle, playerjump;
         int width, backgroundWidth;
         int height, backgroundHeight;
-        int lifeCount = 0;
+        int hitCount = 0;
 
 
         float speed;
@@ -67,7 +68,8 @@ namespace Class_system__not_systemic_
         float ballGravitySpeed = 2f;
         float jumpSpeed = 7f; // This will determine the strength of the jump
         bool onGround = false, ballOnGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false,
-            canExitYellow = false, canExitRed = false, canExitBlue = false, playerDeathCheck = false;
+            canExitYellow = false, canExitRed = false, canExitBlue = false, playerDeathCheck = false, 
+            oneHeartLost = false, twoHeartLost = false, noHeart= false, fullHeart = true;
 
         float cyborgSpeed;
         float cyborgFrameSpeed;
@@ -87,7 +89,7 @@ namespace Class_system__not_systemic_
         Rectangle playerCollisionRect, enemyBallCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
             playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, enemyBallDrawRect, 
             yellowCardBtn, redCardBtn, blueCardBtn, yellowKeyCardCollectable, redKeyCardCollectable, blueKeyCardCollectable, enemyBallRect, 
-            exitDoorRect;
+            exitDoorRect, heartDisplayRect;
 
 
         public Game1()
@@ -127,6 +129,11 @@ namespace Class_system__not_systemic_
             barriers.Add(new Rectangle(600, 225, 150, 10));
             barriers.Add(new Rectangle(0, 65, 150, 10));
 
+            barriers.Add(new Rectangle(200, 165, 175, 10));
+
+
+            verticalBarriers = new List<Rectangle>();
+            verticalBarriers.Add(new Rectangle(530, 300, 10, 170));
 
             ladders = new List<Rectangle>();
             ladders.Add(new Rectangle(754, 50, 35, 350)); 
@@ -225,7 +232,11 @@ namespace Class_system__not_systemic_
             yellowLockDoor = Content.Load<Texture2D>("yellowLevelExitDoorLocked");
             redLockDoor = Content.Load<Texture2D>("redLevelExitDoorLocked");
             blueLockDoor = Content.Load<Texture2D>("blueLevelExitDoorLocked");
-
+            //Hearts
+            zeroHeartsTexture = Content.Load<Texture2D>("no_health"); //goes w/no hearts
+            oneHeartsTexture = Content.Load<Texture2D>("1_heart"); //goes w/2 hearts lost
+            twoHeartsTexture = Content.Load<Texture2D>("2_hearts"); // goes w/1 heart lost
+            fullHeartsTexture = Content.Load<Texture2D>("full_health"); //goes w/ full hearts
 
             trainTexture = Content.Load<Texture2D>("trainTexture");
             enemyBall = Content.Load<Texture2D>("enemyBall");
@@ -323,6 +334,16 @@ namespace Class_system__not_systemic_
                 if(mouseState.LeftButton == ButtonState.Pressed && yellowCardBtn.Contains(mouseState.Position) 
                     && prevMouseState.LeftButton == ButtonState.Released && !yellowCardCaptured)
                 {
+
+                    playerLocation = new Vector2(10, 30);
+                    enemyBallLocation = new Vector2(700, 150);
+                    enemyBallSpeedX = 2;
+                    hitCount = 0;
+                    fullHeart = true;
+                    oneHeartLost = false;
+                    twoHeartLost = false;
+                    noHeart = false;
+                    UpdateRects();
                     screen = Screen.Level1;
                 }
 
@@ -330,19 +351,35 @@ namespace Class_system__not_systemic_
                     && prevMouseState.LeftButton == ButtonState.Released && !redCardCaptured)
                 {
                     playerLocation = new Vector2(10, 30);
+                    enemyBallLocation = new Vector2(700, 150);
+                    enemyBallSpeedX = 2;
+                    hitCount = 0;
+                    fullHeart = true;
+                    oneHeartLost = false;
+                    twoHeartLost = false;
+                    noHeart = false;
                     UpdateRects();
                     screen = Screen.Level2;
-                    
+
+
                 }
 
                 if (mouseState.LeftButton == ButtonState.Pressed && blueCardBtn.Contains(mouseState.Position)
                     && prevMouseState.LeftButton == ButtonState.Released && !blueCardCaptured)
                 {
+                    playerLocation = new Vector2(10, 30);
+                    enemyBallLocation = new Vector2(700, 150);
+                    enemyBallSpeedX = 2;
+                    hitCount = 0;
+                    fullHeart = true;
+                    oneHeartLost = false;
+                    twoHeartLost = false;
+                    noHeart = false;
                     screen = Screen.Level3;
                 }
 
 
-                if (yellowCardCaptured == true && redCardCaptured == true == blueCardCaptured == true);
+                if (yellowCardCaptured == true && redCardCaptured == true == blueCardCaptured == true)
                 {
                     gameEnd = true;
                 }
@@ -361,7 +398,7 @@ namespace Class_system__not_systemic_
                 playerSpeed.X = 0f;
                 enemyBallDirection.X -= 0.01f;
                 enemyBallRotation += 0.15f;
-                enemyBallLocation.X += enemyBallDirection.X * enemyBallSpeedX;
+                enemyBallLocation.X -= enemyBallSpeedX;
 
               
 
@@ -429,7 +466,7 @@ namespace Class_system__not_systemic_
                 enemyBallLocation.Y += ballGravitySpeed;
 
                 UpdateRects();
-                //Ball hitting barriers
+
 
                 foreach (Rectangle barrier in barriers)
                     if (playerCollisionRect.Intersects(barrier))
@@ -438,6 +475,24 @@ namespace Class_system__not_systemic_
                         UpdateRects();
                     }
 
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    if (playerCollisionRect.Intersects(verticalBarrier))
+                    {
+                         if (gravitySpeed > 0)
+                        {
+                            playerLocation.Y = verticalBarrier.Top - playerCollisionRect.Height;
+                            onGround = true;
+                            gravitySpeed = 0;
+                        }
+                        UpdateRects();
+
+                        playerLocation -= playerDirection * speed;
+                        UpdateRects();
+                    }
+                }
+
+                //Ball hitting barriers
                 foreach (Rectangle barrier in barriers)
                 {
                     if (enemyBallCollisionRect.Intersects(barrier))
@@ -451,18 +506,27 @@ namespace Class_system__not_systemic_
                     }
                 }
 
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    if (enemyBallCollisionRect.Intersects(verticalBarrier))
+                    {
+                        enemyBallSpeedX *= -1;
+                        UpdateRects();
+                    }
+                }
+
                 //Hitting a platform while moving vertically
                 foreach (Rectangle barrier in barriers)
                     if (playerCollisionRect.Intersects(barrier))
                     {
                         //Moving Up
-                                if (gravitySpeed < 0)
+                        if (gravitySpeed < 0)
                         {
                             playerLocation.Y = barrier.Bottom;
                             gravitySpeed = 0;
                         }
                         //Moving Down
-                                else if (gravitySpeed > 0)
+                        else if (gravitySpeed > 0)
                         {
                             playerLocation.Y = barrier.Top - playerCollisionRect.Height;
                             onGround = true;
@@ -471,11 +535,44 @@ namespace Class_system__not_systemic_
                         UpdateRects();
                     }
 
+
+                if (enemyBallCollisionRect.X <= 0 || enemyBallCollisionRect.X >= 800 - enemyBallCollisionRect.Width)
+                {
+                    enemyBallSpeedX *= -1;
+                    UpdateRects();
+                }
+
+
+
                 //Ball harm player yay!
 
                 if (enemyBallCollisionRect.Intersects(playerCollisionRect))
                 {
+                    hitCount++;
+                    enemyBallLocation.X = 400;
+                    enemyBallLocation.Y = 100;
+                    UpdateRects();
 
+                    if (hitCount == 1)
+                    {
+                        oneHeartLost = true;
+                        fullHeart = false;
+                    }
+
+                    if (hitCount == 2)
+                    {
+                        oneHeartLost = false;
+                        twoHeartLost = true;
+                    }
+
+                    if (hitCount == 3)
+                    {
+                        noHeart = true;
+                        twoHeartLost = false;
+                        playerDeathCheck = true;
+                    }
+
+                    
                 }
 
 
@@ -504,17 +601,15 @@ namespace Class_system__not_systemic_
             {
 
                 mouseState = Mouse.GetState();
-                
-
+                keyboardState = Keyboard.GetState();
 
                 SetPlayerDirection();
                 playerLocation += playerDirection * speed;
                 UpdateRects();
-
                 playerSpeed.X = 0f;
                 enemyBallDirection.X -= 0.01f;
                 enemyBallRotation += 0.15f;
-                enemyBallLocation.X += enemyBallDirection.X * enemyBallSpeedX;
+                enemyBallLocation.X -= enemyBallSpeedX;
 
 
 
@@ -582,7 +677,7 @@ namespace Class_system__not_systemic_
                 enemyBallLocation.Y += ballGravitySpeed;
 
                 UpdateRects();
-                //Ball hitting barriers
+
 
                 foreach (Rectangle barrier in barriers)
                     if (playerCollisionRect.Intersects(barrier))
@@ -591,6 +686,24 @@ namespace Class_system__not_systemic_
                         UpdateRects();
                     }
 
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    if (playerCollisionRect.Intersects(verticalBarrier))
+                    {
+                        if (gravitySpeed > 0)
+                        {
+                            playerLocation.Y = verticalBarrier.Top - playerCollisionRect.Height;
+                            onGround = true;
+                            gravitySpeed = 0;
+                        }
+                        UpdateRects();
+
+                        playerLocation -= playerDirection * speed;
+                        UpdateRects();
+                    }
+                }
+
+                //Ball hitting barriers
                 foreach (Rectangle barrier in barriers)
                 {
                     if (enemyBallCollisionRect.Intersects(barrier))
@@ -601,6 +714,15 @@ namespace Class_system__not_systemic_
                     else
                     {
                         ballGravitySpeed = 2;
+                    }
+                }
+
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    if (enemyBallCollisionRect.Intersects(verticalBarrier))
+                    {
+                        enemyBallSpeedX *= -1;
+                        UpdateRects();
                     }
                 }
 
@@ -623,6 +745,47 @@ namespace Class_system__not_systemic_
                         }
                         UpdateRects();
                     }
+
+
+                if (enemyBallCollisionRect.X <= 0 || enemyBallCollisionRect.X >= 800 - enemyBallCollisionRect.Width)
+                {
+                    enemyBallSpeedX *= -1;
+                    UpdateRects();
+                }
+
+
+
+                //Ball harm player yay!
+
+                if (enemyBallCollisionRect.Intersects(playerCollisionRect))
+                {
+                    hitCount++;
+                    enemyBallLocation.X = 400;
+                    enemyBallLocation.Y = 100;
+                    UpdateRects();
+
+                    if (hitCount == 1)
+                    {
+                        oneHeartLost = true;
+                        fullHeart = false;
+                    }
+
+                    if (hitCount == 2)
+                    {
+                        oneHeartLost = false;
+                        twoHeartLost = true;
+                    }
+
+                    if (hitCount == 3)
+                    {
+                        noHeart = true;
+                        twoHeartLost = false;
+                        playerDeathCheck = true;
+                    }
+
+
+                }
+
 
                 //Keycard Grabbers: 
                 if (playerCollisionRect.Intersects(redKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
@@ -647,6 +810,212 @@ namespace Class_system__not_systemic_
 
             }
 
+
+            else if (screen == Screen.Level3)
+            {
+                mouseState = Mouse.GetState();
+                keyboardState = Keyboard.GetState();
+
+                SetPlayerDirection();
+                playerLocation += playerDirection * speed;
+                UpdateRects();
+                playerSpeed.X = 0f;
+                enemyBallDirection.X -= 0.01f;
+                enemyBallRotation += 0.15f;
+                enemyBallLocation.X -= enemyBallSpeedX;
+
+
+
+                time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (time > frameSpeed)
+                {
+                    time = 0f;
+                    frame = (frame + 1) % daveFrames[directionRow];
+                }
+                //debug += frame.ToString();
+
+                bgtime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                if (bgtime > backgroundFrameSpeed)
+                {
+                    backgroundFrame = (1 + backgroundFrame) % backgroundFrames;
+                    bgtime = 0f;
+                }
+
+
+                //backgroundCODE!!!
+
+                currentBackgroundTexture = background1;
+
+                window.X += 2;
+
+                if (window.X > window.Width * 7 - 1)
+                {
+                    window.X = -800;
+                }
+
+                movingWindow.X += 2;
+
+                if (movingWindow.X > movingWindow.Width * 7 - 1)
+                {
+                    movingWindow.X = -800;
+                }
+
+                if (!onGround)
+                {
+                    gravitySpeed += gravity;
+                }
+                else if (keyboardState.IsKeyDown(Keys.Space) && onGround)
+                {
+                    gravitySpeed = -jumpSpeed;
+                    onGround = false;
+                }
+                else if (keyboardState.IsKeyDown(Keys.W) || keyboardState.IsKeyDown(Keys.W))
+                {
+                    onGround = true;
+                    gravitySpeed = 0f;
+                }
+
+                else gravitySpeed += gravity;
+
+                foreach (Rectangle ladder in ladders)
+                {
+                    if (playerCollisionRect.Intersects(ladder))
+                    {
+                        gravitySpeed = 0;
+                    }
+
+                }
+
+                playerLocation.Y += gravitySpeed;
+                enemyBallLocation.Y += ballGravitySpeed;
+
+                UpdateRects();
+
+
+                foreach (Rectangle barrier in barriers)
+                    if (playerCollisionRect.Intersects(barrier))
+                    {
+                        playerLocation -= playerDirection * speed;
+                        UpdateRects();
+                    }
+
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    if (playerCollisionRect.Intersects(verticalBarrier))
+                    {
+                        if (gravitySpeed > 0)
+                        {
+                            playerLocation.Y = verticalBarrier.Top - playerCollisionRect.Height;
+                            onGround = true;
+                            gravitySpeed = 0;
+                        }
+                        UpdateRects();
+
+                        playerLocation -= playerDirection * speed;
+                        UpdateRects();
+                    }
+                }
+
+                //Ball hitting barriers
+                foreach (Rectangle barrier in barriers)
+                {
+                    if (enemyBallCollisionRect.Intersects(barrier))
+                    {
+                        enemyBallLocation.Y = barrier.Top - enemyBallCollisionRect.Height;
+                        ballGravitySpeed = 0;
+                    }
+                    else
+                    {
+                        ballGravitySpeed = 2;
+                    }
+                }
+
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    if (enemyBallCollisionRect.Intersects(verticalBarrier))
+                    {
+                        enemyBallSpeedX *= -1;
+                        UpdateRects();
+                    }
+                }
+
+                //Hitting a platform while moving vertically
+                foreach (Rectangle barrier in barriers)
+                    if (playerCollisionRect.Intersects(barrier))
+                    {
+                        //Moving Up
+                        if (gravitySpeed < 0)
+                        {
+                            playerLocation.Y = barrier.Bottom;
+                            gravitySpeed = 0;
+                        }
+                        //Moving Down
+                        else if (gravitySpeed > 0)
+                        {
+                            playerLocation.Y = barrier.Top - playerCollisionRect.Height;
+                            onGround = true;
+                            gravitySpeed = 0;
+                        }
+                        UpdateRects();
+                    }
+
+
+                if (enemyBallCollisionRect.X <= 0 || enemyBallCollisionRect.X >= 800 - enemyBallCollisionRect.Width)
+                {
+                    enemyBallSpeedX *= -1;
+                    UpdateRects();
+                }
+
+
+
+                //Ball harm player yay!
+
+                if (enemyBallCollisionRect.Intersects(playerCollisionRect))
+                {
+                    hitCount++;
+                    enemyBallLocation.X = 400;
+                    enemyBallLocation.Y = 100;
+                    UpdateRects();
+
+                    if (hitCount == 1)
+                    {
+                        oneHeartLost = true;
+                        fullHeart = false;
+                    }
+
+                    if (hitCount == 2)
+                    {
+                        oneHeartLost = false;
+                        twoHeartLost = true;
+                    }
+
+                    if (hitCount == 3)
+                    {
+                        noHeart = true;
+                        twoHeartLost = false;
+                        playerDeathCheck = true;
+                    }
+
+                    //Keycard Grabbers: 
+                    if (playerCollisionRect.Intersects(blueKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
+                    {
+                        blueCardCaptured = true;
+                    }
+
+                    //Exit Door
+
+                    if (playerCollisionRect.Intersects(exitDoorRect) && blueCardCaptured == true && keyboardState.IsKeyDown(Keys.E))
+                    {
+                        canExitBlue = true;
+                    }
+
+                    else if (canExitRed)
+                    {
+                        screen = Screen.LevelSelector;
+                    }
+
+                }
+            }
 
             else if (screen == Screen.EndScreen)
             {
@@ -752,6 +1121,10 @@ namespace Class_system__not_systemic_
                     _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
                 }
 
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    _spriteBatch.Draw(rectangleTexture, verticalBarrier, Color.Blue * 0.3f);
+                }
                 foreach (Rectangle ladder in ladders)
                 {
                     _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
@@ -775,7 +1148,19 @@ namespace Class_system__not_systemic_
                    SpriteEffects.None,
                    0f);
 
-                
+                if (fullHeart == true)
+                {
+                    _spriteBatch.Draw(fullHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+                }
+
+                if (oneHeartLost == true)
+                    _spriteBatch.Draw(twoHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+
+                if (twoHeartLost == true)
+                    _spriteBatch.Draw(oneHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+
+                if (noHeart == true)
+                    _spriteBatch.Draw(zeroHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
 
             }
 
@@ -836,15 +1221,100 @@ namespace Class_system__not_systemic_
                    SpriteEffects.None,
                    0f);
 
+
+                if (fullHeart == true)
+                {
+                    _spriteBatch.Draw(fullHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+                }
+
+                if (oneHeartLost == true)
+                    _spriteBatch.Draw(twoHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+
+                if (twoHeartLost == true)
+                    _spriteBatch.Draw(oneHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+
+                if (noHeart == true)
+                    _spriteBatch.Draw(zeroHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+            }
+
+
+            if (screen == Screen.Level3)
+            {
+                _spriteBatch.Draw(background2, movingWindow, Color.Magenta);
+                _spriteBatch.Draw(background3, new Rectangle(movingWindow.X - movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background4, new Rectangle(movingWindow.X - 2 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background5, new Rectangle(movingWindow.X - 3 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background6, new Rectangle(movingWindow.X - 4 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background7, new Rectangle(movingWindow.X - 6 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+                _spriteBatch.Draw(background8, new Rectangle(movingWindow.X - 5 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
+
+                _spriteBatch.Draw(background1, window, Color.Magenta);
+
+                _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
+
+                if (blueCardCaptured == false)
+                {
+                    _spriteBatch.Draw(blueKeyCardTexture, blueKeyCardCollectable, Color.White);
+                }
+
+                if (canExitBlue == false)
+                {
+                    _spriteBatch.Draw(blueLockDoor, new Rectangle(500, 225, exitDoorTexture.Width, exitDoorTexture.Height), Color.Magenta);
+                }
+
+                else
+                {
+                    _spriteBatch.Draw(exitDoorTexture, new Rectangle(500, 225, exitDoorTexture.Width, exitDoorTexture.Height), Color.Magenta);
+                }
+
+                foreach (Rectangle barrier in barriers)
+                {
+                    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
+                }
+
+                foreach (Rectangle ladder in ladders)
+                {
+                    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
+                }
+
+                _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
+                _spriteBatch.Draw(characterSpriteSheet, playerDrawRect,
+                    new Rectangle(frame * width, directionRow * height, width, height),
+                    Color.White,
+                    0,
+                    new((int)playerDrawRect.Width / 2, 0),
+                    daveFlipHorizontally,
+                    0
+                    );
+
+                _spriteBatch.Draw(enemyBall, new Rectangle(enemyBallCollisionRect.X + 25, enemyBallCollisionRect.Y + 25, enemyBallCollisionRect.Width, enemyBallCollisionRect.Height),
+                   null,
+                   Color.White,
+                   enemyBallRotation,
+                   new Vector2(enemyBall.Width / 2, enemyBall.Height / 2),
+                   SpriteEffects.None,
+                   0f);
+
+
+                if (fullHeart == true)
+                {
+                    _spriteBatch.Draw(fullHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+                }
+
+                if (oneHeartLost == true)
+                    _spriteBatch.Draw(twoHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+
+                if (twoHeartLost == true)
+                    _spriteBatch.Draw(oneHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
+
+                if (noHeart == true)
+                    _spriteBatch.Draw(zeroHeartsTexture, new Rectangle(50, 450, fullHeartsTexture.Width, fullHeartsTexture.Height), Color.White);
             }
 
 
 
 
-
-
-
-                if (screen == Screen.EndScreen)
+            if (screen == Screen.EndScreen)
             {
 
             }
