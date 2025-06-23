@@ -30,7 +30,7 @@ namespace Class_system__not_systemic_
             background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
             instructionsMenuTexture, cyborgDeath, cyborgRun, 
             cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
-            blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture,
+            blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture, ladderTexture,
             twoHeartsTexture, fullHeartsTexture;
 
         List<Texture2D> cyborgSprites;
@@ -136,8 +136,8 @@ namespace Class_system__not_systemic_
             verticalBarriers.Add(new Rectangle(530, 300, 10, 170));
 
             ladders = new List<Rectangle>();
-            ladders.Add(new Rectangle(754, 50, 35, 350)); 
-            ladders.Add(new Rectangle(155, 60, 35, 250));
+            ladders.Add(new Rectangle(754, 180, 35, 235)); 
+            ladders.Add(new Rectangle(155, 60, 35, 215));
 
 
             daveFrames = new int[]{
@@ -253,7 +253,8 @@ namespace Class_system__not_systemic_
             instructionsMenuTexture = Content.Load<Texture2D>("instructionsMenu");
             levelSelectionMenuTexture = Content.Load<Texture2D>("noLevelComplete");
 
-
+            //ladder
+            ladderTexture = Content.Load<Texture2D>("ladderSmall");
 
             cyborgIdle = Content.Load<Texture2D>("Cyborg_idle");       //0
             cyborgRun = Content.Load<Texture2D>("Cyborg_run");         //1
@@ -995,26 +996,26 @@ namespace Class_system__not_systemic_
                         twoHeartLost = false;
                         playerDeathCheck = true;
                     }
-
-                    //Keycard Grabbers: 
-                    if (playerCollisionRect.Intersects(blueKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
-                    {
-                        blueCardCaptured = true;
-                    }
-
-                    //Exit Door
-
-                    if (playerCollisionRect.Intersects(exitDoorRect) && blueCardCaptured == true && keyboardState.IsKeyDown(Keys.E))
-                    {
-                        canExitBlue = true;
-                    }
-
-                    else if (canExitRed)
-                    {
-                        screen = Screen.LevelSelector;
-                    }
-
                 }
+
+                //Keycard Grabbers: 
+                if (playerCollisionRect.Intersects(blueKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
+                {
+                    blueCardCaptured = true;
+                }
+
+                //Exit Door
+
+                if (playerCollisionRect.Intersects(exitDoorRect) && blueCardCaptured == true && keyboardState.IsKeyDown(Keys.E))
+                {
+                    canExitBlue = true;
+                }
+
+                else if (canExitBlue)
+                {
+                    screen = Screen.LevelSelector;
+                }
+
             }
 
             else if (screen == Screen.EndScreen)
@@ -1127,7 +1128,7 @@ namespace Class_system__not_systemic_
                 }
                 foreach (Rectangle ladder in ladders)
                 {
-                    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(ladderTexture, ladder, Color.Brown);
                 }
 
                 _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
@@ -1200,7 +1201,7 @@ namespace Class_system__not_systemic_
 
                 foreach (Rectangle ladder in ladders)
                 {
-                    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(ladderTexture, ladder, Color.Brown);
                 }
 
                 _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
@@ -1274,7 +1275,7 @@ namespace Class_system__not_systemic_
 
                 foreach (Rectangle ladder in ladders)
                 {
-                    _spriteBatch.Draw(rectangleTexture, ladder, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(ladderTexture, ladder, Color.Brown);
                 }
 
                 _spriteBatch.Draw(rectangleTexture, playerCollisionRect, Color.Black * 0.3f);
