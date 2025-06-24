@@ -28,10 +28,9 @@ namespace Class_system__not_systemic_
         Screen screen;
         Texture2D characterSpriteSheet, rectangleTexture, backgroundSpriteSheet, currentBackgroundTexture, background1, 
             background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
-            instructionsMenuTexture, cyborgDeath, cyborgRun, 
-            cyborgIdle, cyborgPunch, currentCyborgTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
+            instructionsMenuTexture, endGameTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
             blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture, ladderTexture,
-            twoHeartsTexture, fullHeartsTexture;
+            twoHeartsTexture, fullHeartsTexture, escapeTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
@@ -68,7 +67,7 @@ namespace Class_system__not_systemic_
         float ballGravitySpeed = 2f;
         float jumpSpeed = 7f; // This will determine the strength of the jump
         bool onGround = false, ballOnGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false,
-            canExitYellow = false, canExitRed = false, canExitBlue = false, playerDeathCheck = false, 
+            canExitYellow = false, canExitRed = false, canExitBlue = false, canEscape = false, playerDeathCheck = false, 
             oneHeartLost = false, twoHeartLost = false, noHeart= false, fullHeart = true;
 
         float cyborgSpeed;
@@ -89,7 +88,7 @@ namespace Class_system__not_systemic_
         Rectangle playerCollisionRect, enemyBallCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
             playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, enemyBallDrawRect, 
             yellowCardBtn, redCardBtn, blueCardBtn, yellowKeyCardCollectable, redKeyCardCollectable, blueKeyCardCollectable, enemyBallRect, 
-            exitDoorRect, heartDisplayRect;
+            exitDoorRect, heartDisplayRect, escapeRect;
 
 
         public Game1()
@@ -115,7 +114,8 @@ namespace Class_system__not_systemic_
             returnToMenuBtn = new Rectangle(680, 60, 110, 50);
             enemyBallCollisionRect = new Rectangle(700, 100, 50, 50);
             enemyBallDrawRect = new Rectangle(700, 100, 50, 50);
-            
+
+            escapeRect = new Rectangle(310, 425, 180, 50);
             barriers = new List<Rectangle>();
 
             
@@ -250,14 +250,13 @@ namespace Class_system__not_systemic_
             background7 = Content.Load<Texture2D>("background7");
             background8 = Content.Load<Texture2D>("background8");
             startmenuTexture = Content.Load<Texture2D>("smokebox");
-            instructionsMenuTexture = Content.Load<Texture2D>("instructionsMenu");
+            instructionsMenuTexture = Content.Load<Texture2D>("instructionsMenuUpdated");
             levelSelectionMenuTexture = Content.Load<Texture2D>("noLevelComplete");
+            escapeTexture = Content.Load<Texture2D>("escapeMenu");
+            endGameTexture = Content.Load<Texture2D>("endMenu");
 
             //ladder
             ladderTexture = Content.Load<Texture2D>("ladderSmall");
-
-            cyborgIdle = Content.Load<Texture2D>("Cyborg_idle");       //0
-            cyborgRun = Content.Load<Texture2D>("Cyborg_run");         //1
             
 
             yellowKeyCardTexture = Content.Load<Texture2D>("yellowCard");
@@ -380,10 +379,21 @@ namespace Class_system__not_systemic_
                 }
 
 
-                if (yellowCardCaptured == true && redCardCaptured == true == blueCardCaptured == true)
+                if (yellowCardCaptured == true && redCardCaptured == true && blueCardCaptured == true)
                 {
-                    gameEnd = true;
+                    canEscape = true;
+                    if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed)
+                    {
+                        gameEnd = true;
+                    }
+
                 }
+                
+                if (gameEnd == true)
+                {
+                    screen = Screen.EndScreen;
+                }
+                      
             }
 
 
@@ -1064,17 +1074,23 @@ namespace Class_system__not_systemic_
                 _spriteBatch.Draw(instructionsMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
                 //_spriteBatch.Draw(rectangleTexture, new Rectangle(566, 60, 110, 50), Color.Black * 0.5f);
                 //_spriteBatch.Draw(rectangleTexture, new Rectangle(680, 60, 110, 50), Color.Black * 0.5f);
+
             }
 
             if (screen == Screen.LevelSelector)
             {
-                _spriteBatch.Draw(levelSelectionMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
-
-                //_spriteBatch.Draw(rectangleTexture, new Rectangle(165, 232, 125, 110), Color.White * 0.15f);
-                //_spriteBatch.Draw(rectangleTexture, new Rectangle(339, 232, 125, 110), Color.White * 0.15f);
-                //_spriteBatch.Draw(rectangleTexture, new Rectangle(512, 232, 125, 110), Color.White * 0.15f);
-
                 
+                if (canEscape == false)
+                    _spriteBatch.Draw(levelSelectionMenuTexture, new Rectangle(0, 0, 800, 500), Color.White);
+
+                if (canEscape == true)
+                    _spriteBatch.Draw(escapeTexture, new Rectangle(0, 0, 800, 500), Color.White);
+
+
+                _spriteBatch.Draw(rectangleTexture, escapeRect, Color.White * 0.15f);
+
+
+
                 if (yellowCardCaptured == true)
                     _spriteBatch.Draw(yellowKeyCardTexture, new Rectangle(185, 251, 80, 80), Color.White);
 
@@ -1317,7 +1333,7 @@ namespace Class_system__not_systemic_
 
             if (screen == Screen.EndScreen)
             {
-
+                _spriteBatch.Draw(endGameTexture, new Rectangle(0, 0, 800, 500), Color.White);
             }
 
             _spriteBatch.End();
