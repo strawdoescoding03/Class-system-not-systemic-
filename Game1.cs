@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Threading;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -18,6 +19,7 @@ namespace Class_system__not_systemic_
         Level1,
         Level2,
         Level3,
+        DeathScreen,
         EndScreen
     }
     public class Game1 : Game
@@ -30,7 +32,7 @@ namespace Class_system__not_systemic_
             background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
             instructionsMenuTexture, endGameTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
             blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture, ladderTexture,
-            twoHeartsTexture, fullHeartsTexture, escapeTexture;
+            twoHeartsTexture, fullHeartsTexture, escapeTexture, deathScreenTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
@@ -75,7 +77,8 @@ namespace Class_system__not_systemic_
         float cyborgTime;
         float enemyBallRotation;
 
-
+        SoundEffect backgroundAudio, damageSound, doorUnlockSound, keycardPickUpSound;
+        SoundEffectInstance backgroundAudioInstance, damageSoundInstance, doorUnlockSoundInstance, keycardPickUpSoundInstance;
 
 
         string debug = "";
@@ -254,6 +257,7 @@ namespace Class_system__not_systemic_
             levelSelectionMenuTexture = Content.Load<Texture2D>("noLevelComplete");
             escapeTexture = Content.Load<Texture2D>("escapeMenu");
             endGameTexture = Content.Load<Texture2D>("endMenu");
+            deathScreenTexture = Content.Load<Texture2D>("deathScreen");
 
             //ladder
             ladderTexture = Content.Load<Texture2D>("ladderSmall");
@@ -262,6 +266,18 @@ namespace Class_system__not_systemic_
             yellowKeyCardTexture = Content.Load<Texture2D>("yellowCard");
             redKeyCardTexture = Content.Load<Texture2D>("redCard");
             blueKeyCardTexture = Content.Load<Texture2D>("blueCard");
+
+            backgroundAudio = Content.Load<SoundEffect>("LindseyStirlingCrystallize");
+            backgroundAudioInstance = backgroundAudio.CreateInstance();
+
+            damageSound = Content.Load<SoundEffect>("damageSound");
+            damageSoundInstance = damageSound.CreateInstance();
+
+            keycardPickUpSound = Content.Load<SoundEffect>("keyCardPickUp");
+            keycardPickUpSoundInstance = keycardPickUpSound.CreateInstance();
+
+            doorUnlockSound = Content.Load<SoundEffect>("doorUnlock");
+            doorUnlockSoundInstance = doorUnlockSound.CreateInstance();
 
 
 
@@ -275,6 +291,8 @@ namespace Class_system__not_systemic_
             keyboardState = Keyboard.GetState();
             prevMouseState = mouseState;
             mouseState = Mouse.GetState();
+            backgroundAudioInstance.Play();
+
             mouseX = mouseState.X;
             mouseY = mouseState.Y;
             this.Window.Title = mouseX + " ," + mouseY + " ";
@@ -382,16 +400,12 @@ namespace Class_system__not_systemic_
                 if (yellowCardCaptured == true && redCardCaptured == true && blueCardCaptured == true)
                 {
                     canEscape = true;
-                    if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed)
+                    if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
                     {
                         gameEnd = true;
+                        screen = Screen.EndScreen;
                     }
 
-                }
-                
-                if (gameEnd == true)
-                {
-                    screen = Screen.EndScreen;
                 }
                       
             }
@@ -559,6 +573,7 @@ namespace Class_system__not_systemic_
 
                 if (enemyBallCollisionRect.Intersects(playerCollisionRect))
                 {
+                    damageSoundInstance.Play();
                     hitCount++;
                     enemyBallLocation.X = 400;
                     enemyBallLocation.Y = 100;
@@ -581,6 +596,10 @@ namespace Class_system__not_systemic_
                         noHeart = true;
                         twoHeartLost = false;
                         playerDeathCheck = true;
+                        yellowCardCaptured = false;
+                        screen = Screen.DeathScreen;
+                        
+
                     }
 
                     
@@ -591,13 +610,17 @@ namespace Class_system__not_systemic_
                 //Keycard Grabbers: 
                 if (playerCollisionRect.Intersects(yellowKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
                 {
-                    yellowCardCaptured = true;                    
+                    keycardPickUpSoundInstance.Play();
+                    yellowCardCaptured = true;    
+                    
+                    
                 }
 
                 //Exit Door
 
                 if (playerCollisionRect.Intersects(exitDoorRect) && yellowCardCaptured && keyboardState.IsKeyDown(Keys.E))
                 {
+                    doorUnlockSoundInstance.Play();
                     canExitYellow = true;
                 }
 
@@ -770,6 +793,7 @@ namespace Class_system__not_systemic_
 
                 if (enemyBallCollisionRect.Intersects(playerCollisionRect))
                 {
+                    damageSoundInstance.Play();
                     hitCount++;
                     enemyBallLocation.X = 400;
                     enemyBallLocation.Y = 100;
@@ -792,6 +816,9 @@ namespace Class_system__not_systemic_
                         noHeart = true;
                         twoHeartLost = false;
                         playerDeathCheck = true;
+
+                        screen = Screen.DeathScreen;
+                        redCardCaptured = false;
                     }
 
 
@@ -801,6 +828,7 @@ namespace Class_system__not_systemic_
                 //Keycard Grabbers: 
                 if (playerCollisionRect.Intersects(redKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
                 {
+                    keycardPickUpSoundInstance.Play();
                     redCardCaptured = true;
                 }
 
@@ -808,6 +836,7 @@ namespace Class_system__not_systemic_
 
                 if (playerCollisionRect.Intersects(exitDoorRect) && redCardCaptured && keyboardState.IsKeyDown(Keys.E))
                 {
+                    doorUnlockSoundInstance.Play();
                     canExitRed = true;
                 }
 
@@ -983,6 +1012,8 @@ namespace Class_system__not_systemic_
 
                 if (enemyBallCollisionRect.Intersects(playerCollisionRect))
                 {
+                    
+                    damageSoundInstance.Play();
                     hitCount++;
                     enemyBallLocation.X = 400;
                     enemyBallLocation.Y = 100;
@@ -1005,12 +1036,16 @@ namespace Class_system__not_systemic_
                         noHeart = true;
                         twoHeartLost = false;
                         playerDeathCheck = true;
+                        screen = Screen.DeathScreen;
+                        blueCardCaptured = false;
+
                     }
                 }
 
                 //Keycard Grabbers: 
                 if (playerCollisionRect.Intersects(blueKeyCardCollectable) && keyboardState.IsKeyDown(Keys.E))
                 {
+                    keycardPickUpSoundInstance.Play();
                     blueCardCaptured = true;
                 }
 
@@ -1018,6 +1053,7 @@ namespace Class_system__not_systemic_
 
                 if (playerCollisionRect.Intersects(exitDoorRect) && blueCardCaptured == true && keyboardState.IsKeyDown(Keys.E))
                 {
+                    doorUnlockSoundInstance.Play();
                     canExitBlue = true;
                 }
 
@@ -1030,7 +1066,11 @@ namespace Class_system__not_systemic_
 
             else if (screen == Screen.EndScreen)
             {
-
+                if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed 
+                    && prevMouseState.LeftButton == ButtonState.Released)
+                {
+                    Exit();
+                }
             }
 
             base.Update(gameTime);
@@ -1329,7 +1369,10 @@ namespace Class_system__not_systemic_
             }
 
 
-
+            if (screen == Screen.DeathScreen)
+            {
+                _spriteBatch.Draw(deathScreenTexture, new Rectangle(0, 0, 800, 500), Color.White);
+            }
 
             if (screen == Screen.EndScreen)
             {

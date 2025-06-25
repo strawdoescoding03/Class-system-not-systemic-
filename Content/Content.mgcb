@@ -181,6 +181,12 @@
 /processorParam:TextureFormat=Color
 /build:Cyborg_run.png
 
+#begin damageSound.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:damageSound.wav
+
 #begin daveSpriteSheet.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -192,6 +198,24 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:daveSpriteSheet.png
+
+#begin deathScreen.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:deathScreen.png
+
+#begin doorUnlock.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:doorUnlock.wav
 
 #begin endMenu.png
 /importer:TextureImporter
@@ -277,6 +301,12 @@
 /processorParam:TextureFormat=Color
 /build:instructionsMenuUpdated.png
 
+#begin keyCardPickUp.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:keyCardPickUp.wav
+
 #begin ladderSmall.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -300,6 +330,12 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ladderTall.png
+
+#begin LindseyStirlingCrystallize.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:LindseyStirlingCrystallize.wav
 
 #begin no_health.png
 /importer:TextureImporter
