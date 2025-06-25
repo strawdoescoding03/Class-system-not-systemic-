@@ -32,7 +32,8 @@ namespace Class_system__not_systemic_
             background2, background3, background4, background5, background6, background7, background8, trainTexture, startmenuTexture, 
             instructionsMenuTexture, endGameTexture, levelSelectionMenuTexture, enemyBall, yellowKeyCardTexture,
             blueKeyCardTexture, redKeyCardTexture, yellowLockDoor, redLockDoor, blueLockDoor, exitDoorTexture, zeroHeartsTexture, oneHeartsTexture, ladderTexture,
-            twoHeartsTexture, fullHeartsTexture, escapeTexture, deathScreenTexture;
+            twoHeartsTexture, fullHeartsTexture, escapeTexture, deathScreenTexture, level1Platforms, verticBarrier, horizontalBarrier, devModeOnTexture, 
+            devModeOffTexture;
 
         List<Texture2D> cyborgSprites;
         List<Rectangle> barriers;
@@ -51,7 +52,7 @@ namespace Class_system__not_systemic_
         int frames;
         int backgroundFrame;
         int backgroundFrames;
-        int enemyBallSpeedX = 2;
+        int enemyBallSpeedX = 4;
 
         int directionRow, bgDraw;
         int mouseX, mouseY;
@@ -70,7 +71,7 @@ namespace Class_system__not_systemic_
         float jumpSpeed = 7f; // This will determine the strength of the jump
         bool onGround = false, ballOnGround = false, yellowCardCaptured = false, redCardCaptured = false, blueCardCaptured = false, gameEnd= false,
             canExitYellow = false, canExitRed = false, canExitBlue = false, canEscape = false, playerDeathCheck = false, 
-            oneHeartLost = false, twoHeartLost = false, noHeart= false, fullHeart = true;
+            oneHeartLost = false, twoHeartLost = false, noHeart= false, fullHeart = true, devModeActivated = false;
 
         float cyborgSpeed;
         float cyborgFrameSpeed;
@@ -91,7 +92,7 @@ namespace Class_system__not_systemic_
         Rectangle playerCollisionRect, enemyBallCollisionRect, playerDrawRect, window, gameWindow, movingWindow,
             playGameButton, instructionsButton, instructionsMenuPlayBtn, returnToMenuBtn, enemyBallDrawRect, 
             yellowCardBtn, redCardBtn, blueCardBtn, yellowKeyCardCollectable, redKeyCardCollectable, blueKeyCardCollectable, enemyBallRect, 
-            exitDoorRect, heartDisplayRect, escapeRect;
+            exitDoorRect, heartDisplayRect, escapeRect, deathScreenMainMenu, deathScreenQuit, devModeRect;
 
 
         public Game1()
@@ -133,10 +134,13 @@ namespace Class_system__not_systemic_
             barriers.Add(new Rectangle(0, 65, 150, 10));
 
             barriers.Add(new Rectangle(200, 165, 175, 10));
+            barriers.Add(new Rectangle(0, 222, 117, 10));
 
 
             verticalBarriers = new List<Rectangle>();
-            verticalBarriers.Add(new Rectangle(530, 300, 10, 170));
+            verticalBarriers.Add(new Rectangle(530, 289, 15, 111));
+            verticalBarriers.Add(new Rectangle(103, 250, 15, 150));
+            verticalBarriers.Add(new Rectangle(373, 136, 15, 150));
 
             ladders = new List<Rectangle>();
             ladders.Add(new Rectangle(754, 180, 35, 235)); 
@@ -204,9 +208,15 @@ namespace Class_system__not_systemic_
             exitDoorRect = new Rectangle (500, 225, 400, 176);
 
 
-            yellowKeyCardCollectable = new Rectangle(215, 350, 50, 50);
-            redKeyCardCollectable = new Rectangle(215, 350, 50, 50);
+            yellowKeyCardCollectable = new Rectangle(9, 181, 50, 50);
+            redKeyCardCollectable = new Rectangle(318, 360, 50, 50);
             blueKeyCardCollectable = new Rectangle(215, 350, 50, 50);
+
+
+            deathScreenMainMenu = new Rectangle(283, 243, 210, 30);
+            deathScreenQuit = new Rectangle(283, 298, 210, 30);
+
+            devModeRect = new Rectangle(635, 58, 105, 75);
 
 
 
@@ -229,12 +239,19 @@ namespace Class_system__not_systemic_
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
+            devModeOffTexture = Content.Load<Texture2D>("devModeOff");
+            devModeOnTexture = Content.Load<Texture2D>("devModeOn");
+
             rectangleTexture = Content.Load<Texture2D>("rectangle");
             characterSpriteSheet = Content.Load<Texture2D>("daveSpriteSheet");
             exitDoorTexture = Content.Load<Texture2D>("ExitDoorUnlocked");
             yellowLockDoor = Content.Load<Texture2D>("yellowLevelExitDoorLocked");
             redLockDoor = Content.Load<Texture2D>("redLevelExitDoorLocked");
             blueLockDoor = Content.Load<Texture2D>("blueLevelExitDoorLocked");
+            level1Platforms = Content.Load<Texture2D>("level1");
+            verticBarrier = Content.Load<Texture2D>("verticBarrier");
+            horizontalBarrier = Content.Load<Texture2D>("horizBarrier");
+
             //Hearts
             zeroHeartsTexture = Content.Load<Texture2D>("no_health"); //goes w/no hearts
             oneHeartsTexture = Content.Load<Texture2D>("1_heart"); //goes w/2 hearts lost
@@ -267,6 +284,7 @@ namespace Class_system__not_systemic_
             redKeyCardTexture = Content.Load<Texture2D>("redCard");
             blueKeyCardTexture = Content.Load<Texture2D>("blueCard");
 
+
             backgroundAudio = Content.Load<SoundEffect>("LindseyStirlingCrystallize");
             backgroundAudioInstance = backgroundAudio.CreateInstance();
 
@@ -291,6 +309,7 @@ namespace Class_system__not_systemic_
             keyboardState = Keyboard.GetState();
             prevMouseState = mouseState;
             mouseState = Mouse.GetState();
+
             backgroundAudioInstance.Play();
 
             mouseX = mouseState.X;
@@ -349,13 +368,43 @@ namespace Class_system__not_systemic_
             else if (screen == Screen.LevelSelector)
             {
 
+                if (mouseState.LeftButton == ButtonState.Pressed && devModeRect.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released
+                    && devModeActivated == false)
+                {
+                    devModeActivated = true;
+                }
+
+                else if (mouseState.LeftButton == ButtonState.Pressed && devModeRect.Contains(mouseState.Position) && prevMouseState.LeftButton == ButtonState.Released
+                    && devModeActivated == true)
+                {
+                    devModeActivated = false;
+                }
+
+                if (devModeActivated == true)
+                {
+                    canEscape = true;
+                    if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed && prevMouseState.LeftButton == ButtonState.Released)
+                    {
+                        gameEnd = true;
+                        screen = Screen.EndScreen;
+                    }
+                }
+
+                if (devModeActivated == false && yellowCardCaptured == false && redCardCaptured == false && blueCardCaptured == false)
+                {
+                    canEscape = false;
+                    gameEnd = false;
+
+                }
+
+
                 if(mouseState.LeftButton == ButtonState.Pressed && yellowCardBtn.Contains(mouseState.Position) 
                     && prevMouseState.LeftButton == ButtonState.Released && !yellowCardCaptured)
                 {
 
                     playerLocation = new Vector2(10, 30);
                     enemyBallLocation = new Vector2(700, 150);
-                    enemyBallSpeedX = 2;
+                    enemyBallSpeedX = 4;
                     hitCount = 0;
                     fullHeart = true;
                     oneHeartLost = false;
@@ -369,8 +418,8 @@ namespace Class_system__not_systemic_
                     && prevMouseState.LeftButton == ButtonState.Released && !redCardCaptured)
                 {
                     playerLocation = new Vector2(10, 30);
-                    enemyBallLocation = new Vector2(700, 150);
-                    enemyBallSpeedX = 2;
+                    enemyBallLocation = new Vector2(130, 130);
+                    enemyBallSpeedX = -5;
                     hitCount = 0;
                     fullHeart = true;
                     oneHeartLost = false;
@@ -385,9 +434,9 @@ namespace Class_system__not_systemic_
                 if (mouseState.LeftButton == ButtonState.Pressed && blueCardBtn.Contains(mouseState.Position)
                     && prevMouseState.LeftButton == ButtonState.Released && !blueCardCaptured)
                 {
-                    playerLocation = new Vector2(10, 30);
-                    enemyBallLocation = new Vector2(700, 150);
-                    enemyBallSpeedX = 2;
+                    playerLocation = new Vector2(600, 400);
+                    enemyBallLocation = new Vector2(10, 30);
+                    enemyBallSpeedX = 5;
                     hitCount = 0;
                     fullHeart = true;
                     oneHeartLost = false;
@@ -793,10 +842,11 @@ namespace Class_system__not_systemic_
 
                 if (enemyBallCollisionRect.Intersects(playerCollisionRect))
                 {
-                    damageSoundInstance.Play();
+                    //damageSoundInstance.Play();
                     hitCount++;
-                    enemyBallLocation.X = 400;
-                    enemyBallLocation.Y = 100;
+                    enemyBallLocation.X = 600;
+                    enemyBallLocation.Y = 400;
+                    enemyBallSpeedX = 1;
                     UpdateRects();
 
                     if (hitCount == 1)
@@ -1012,11 +1062,11 @@ namespace Class_system__not_systemic_
 
                 if (enemyBallCollisionRect.Intersects(playerCollisionRect))
                 {
-                    
+
                     damageSoundInstance.Play();
                     hitCount++;
-                    enemyBallLocation.X = 400;
-                    enemyBallLocation.Y = 100;
+                    enemyBallLocation.X = 10;
+                    enemyBallLocation.Y = 30;
                     UpdateRects();
 
                     if (hitCount == 1)
@@ -1064,9 +1114,24 @@ namespace Class_system__not_systemic_
 
             }
 
+            else if (screen == Screen.DeathScreen)
+            {
+                if (deathScreenMainMenu.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed &&
+                    prevMouseState.LeftButton == ButtonState.Released)
+                {
+                    screen = Screen.LevelSelector;
+                }
+
+                else if (deathScreenQuit.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed &&
+                    prevMouseState.LeftButton == ButtonState.Released)
+                {
+                    Exit();
+                }
+            }
+
             else if (screen == Screen.EndScreen)
             {
-                if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed 
+                if (escapeRect.Contains(mouseState.Position) && mouseState.LeftButton == ButtonState.Pressed
                     && prevMouseState.LeftButton == ButtonState.Released)
                 {
                     Exit();
@@ -1127,10 +1192,6 @@ namespace Class_system__not_systemic_
                     _spriteBatch.Draw(escapeTexture, new Rectangle(0, 0, 800, 500), Color.White);
 
 
-                _spriteBatch.Draw(rectangleTexture, escapeRect, Color.White * 0.15f);
-
-
-
                 if (yellowCardCaptured == true)
                     _spriteBatch.Draw(yellowKeyCardTexture, new Rectangle(185, 251, 80, 80), Color.White);
 
@@ -1140,6 +1201,17 @@ namespace Class_system__not_systemic_
 
                 if (blueCardCaptured == true)
                     _spriteBatch.Draw(blueKeyCardTexture, new Rectangle(532, 251, 80, 80), Color.White);
+
+
+                if (devModeActivated == false)
+                {
+                    _spriteBatch.Draw(devModeOffTexture, devModeRect, Color.White);
+                }
+
+                if (devModeActivated == true)
+                {
+                    _spriteBatch.Draw(devModeOnTexture, devModeRect, Color.White);
+                }
 
             }
 
@@ -1155,6 +1227,8 @@ namespace Class_system__not_systemic_
                 _spriteBatch.Draw(background8, new Rectangle(movingWindow.X - 5 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
 
                 _spriteBatch.Draw(background1, window, Color.Magenta);
+                _spriteBatch.Draw(level1Platforms, new Rectangle(0, 0, level1Platforms.Width, level1Platforms.Height), Color.Magenta);
+
 
                 _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
 
@@ -1175,12 +1249,12 @@ namespace Class_system__not_systemic_
 
                 foreach (Rectangle barrier in barriers)
                 {
-                    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(horizontalBarrier, barrier, Color.Magenta);
                 }
 
                 foreach (Rectangle verticalBarrier in verticalBarriers)
                 {
-                    _spriteBatch.Draw(rectangleTexture, verticalBarrier, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(verticBarrier, verticalBarrier, Color.Magenta);
                 }
                 foreach (Rectangle ladder in ladders)
                 {
@@ -1232,7 +1306,7 @@ namespace Class_system__not_systemic_
                 _spriteBatch.Draw(background8, new Rectangle(movingWindow.X - 5 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
 
                 _spriteBatch.Draw(background1, window, Color.Magenta);
-
+                _spriteBatch.Draw(level1Platforms, new Rectangle(0, 0, level1Platforms.Width, level1Platforms.Height), Color.Magenta);
                 _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
 
                 if (redCardCaptured == false)
@@ -1252,9 +1326,14 @@ namespace Class_system__not_systemic_
 
                 foreach (Rectangle barrier in barriers)
                 {
-                    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(horizontalBarrier, barrier, Color.Magenta);
                 }
 
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    _spriteBatch.Draw(verticBarrier, verticalBarrier, Color.Magenta);
+
+                }
                 foreach (Rectangle ladder in ladders)
                 {
                     _spriteBatch.Draw(ladderTexture, ladder, Color.Brown);
@@ -1306,7 +1385,7 @@ namespace Class_system__not_systemic_
                 _spriteBatch.Draw(background8, new Rectangle(movingWindow.X - 5 * movingWindow.Width, movingWindow.Y, movingWindow.Width, movingWindow.Height), Color.Magenta);
 
                 _spriteBatch.Draw(background1, window, Color.Magenta);
-
+                _spriteBatch.Draw(level1Platforms, new Rectangle(0, 0, level1Platforms.Width, level1Platforms.Height), Color.Magenta);
                 _spriteBatch.Draw(trainTexture, new Rectangle(0, 400, trainTexture.Width, trainTexture.Height), Color.Magenta);
 
                 if (blueCardCaptured == false)
@@ -1326,7 +1405,12 @@ namespace Class_system__not_systemic_
 
                 foreach (Rectangle barrier in barriers)
                 {
-                    _spriteBatch.Draw(rectangleTexture, barrier, Color.Blue * 0.3f);
+                    _spriteBatch.Draw(horizontalBarrier, barrier, Color.Magenta);
+                }
+
+                foreach (Rectangle verticalBarrier in verticalBarriers)
+                {
+                    _spriteBatch.Draw(verticBarrier, verticalBarrier, Color.Magenta);
                 }
 
                 foreach (Rectangle ladder in ladders)
@@ -1372,6 +1456,10 @@ namespace Class_system__not_systemic_
             if (screen == Screen.DeathScreen)
             {
                 _spriteBatch.Draw(deathScreenTexture, new Rectangle(0, 0, 800, 500), Color.White);
+
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(283, 243, 210, 30), Color.White * 0.5f);
+                //_spriteBatch.Draw(rectangleTexture, new Rectangle(283, 298, 210, 30), Color.White*0.5f);
+
             }
 
             if (screen == Screen.EndScreen)

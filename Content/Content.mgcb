@@ -211,6 +211,30 @@
 /processorParam:TextureFormat=Color
 /build:deathScreen.png
 
+#begin devModeOff.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:devModeOff.png
+
+#begin devModeON.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:devModeON.png
+
 #begin doorUnlock.wav
 /importer:WavImporter
 /processor:SoundEffectProcessor
@@ -277,6 +301,18 @@
 /processorParam:TextureFormat=Color
 /build:full_health.png
 
+#begin horizBarrier.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:horizBarrier.png
+
 #begin instructionsMenu.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -330,6 +366,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:ladderTall.png
+
+#begin level1.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:level1.png
 
 #begin LindseyStirlingCrystallize.wav
 /importer:WavImporter
@@ -432,6 +480,18 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:trainTexture.png
+
+#begin verticBarrier.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:verticBarrier.png
 
 #begin yellowCard.png
 /importer:TextureImporter
